@@ -30,8 +30,9 @@ local function run(durationHours, dlog, atlasConfigPath)
     end
 
     local function flyTo(target)
+        -- not anchored while flying
         humanoid.PlatformStand = true
-        hrp.Anchored = true
+        hrp.Anchored = false
         local done = false
         local connection
         connection = RunService.Heartbeat:Connect(function(dt)
@@ -46,8 +47,13 @@ local function run(durationHours, dlog, atlasConfigPath)
             hrp.CFrame = CFrame.new(hrp.Position + (target - hrp.Position).Unit * SPEED * dt)
         end)
         while not done do task.wait() end
+    end
+
+    local function waitAnchored(secs)
+        humanoid.PlatformStand = true
+        hrp.Anchored = true
+        task.wait(secs)
         hrp.Anchored = false
-        humanoid.PlatformStand = false
     end
 
     dlog("[Commando] Starting — duration: " .. durationHours .. "h")
@@ -59,12 +65,7 @@ local function run(durationHours, dlog, atlasConfigPath)
         local remainingH = math.floor((endTime - os.time()) / 360) / 10
         dlog("[Commando] Cycle " .. cycle .. " | " .. remainingH .. "h remaining")
 
-        -- wait at start (anchored so we dont fall)
-        humanoid.PlatformStand = true
-        hrp.Anchored = true
-        task.wait(WAIT_SECS)
-        hrp.Anchored = false
-        humanoid.PlatformStand = false
+        waitAnchored(WAIT_SECS)
         if _stopFlag then break end
 
         flyTo(POS_A)
