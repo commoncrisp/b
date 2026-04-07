@@ -53,16 +53,29 @@ local function checkTrigger(trigger, stepStartTime, detection)
     return false
 end
 
+local ATLAS_URL = "https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"
+
 -- ── Atlas config swap ─────────────────────────────────────────────────────────
 local function applyAtlasConfig(configPath, dlog)
     dlog("[Runner] Swapping atlas config: " .. configPath)
-    pcall(function()
+    local ok, err = pcall(function()
         local data = readfile(configPath)
         writefile("Atlas/Preset 1.json", data)
-        pcall(function()
-            writefile("Atlas/Bee Swarm Simulator/Configs/Preset 1.json", data)
-        end)
+        writefile("Atlas/Bee Swarm Simulator/Configs/Preset 1.json", data)
     end)
+    if not ok then
+        dlog("[Runner] Config write failed: " .. tostring(err))
+        return
+    end
+    dlog("[Runner] Reloading Atlas...")
+    local ok2, err2 = pcall(function()
+        loadstring(game:HttpGet(ATLAS_URL))()
+    end)
+    if ok2 then
+        dlog("[Runner] Atlas reloaded")
+    else
+        dlog("[Runner] Atlas reload failed: " .. tostring(err2))
+    end
 end
 
 -- ── Runner state (one route at a time) ───────────────────────────────────────
