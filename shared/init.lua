@@ -136,6 +136,31 @@ local function init()
         gui.setRouteStatus("⏹ Stopped")
         dlog("Route stopped by user")
     end)
+        -- ── Alt Command ────────────────────────────────────────────────
+    local commandoAlt = loadstring(game:HttpGet(rawBase .. "modules/commando_alt/init.lua"))()
+
+    gui.onCommando(function(hours)
+        dlog("Starting Commando Alt for " .. hours .. " hours")
+        gui.setCommandoStatus("▶ Running: " .. hours .. "h")
+        task.spawn(function()
+            local ok, err = pcall(function()
+                commandoAlt.run(hours, dlog)
+            end)
+            if ok then
+                gui.setCommandoStatus("✓ Completed")
+                dlog("Commando Alt completed")
+            else
+                gui.setCommandoStatus("✗ Error: " .. tostring(err))
+                dlog("Commando Alt error: " .. tostring(err))
+            end
+        end)
+    end)
+
+    gui.onCommandoStop(function()
+        commandoAlt.stop()
+        gui.setCommandoStatus("⏹ Stopped")
+        dlog("Commando Alt stopped")
+    end)
 
 end
 
