@@ -1,4 +1,4 @@
-local rawBase = "https://raw.githubusercontent.com/commoncrisp/a/main/"
+local rawBase = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 
 local function init()
     local debugConsole = loadstring(game:HttpGet(rawBase .. "shared/debug_console.lua"))()
