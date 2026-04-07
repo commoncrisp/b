@@ -29,10 +29,23 @@ local function run(durationHours, dlog, atlasConfigPath)
         return
     end
 
+    local function setCollision(enabled)
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = enabled
+            end
+        end
+    end
+
     local function flyTo(target)
-        -- not anchored while flying
         humanoid.PlatformStand = true
         hrp.Anchored = false
+
+        -- disable collision while flying
+        local collisionConnection = RunService.Heartbeat:Connect(function()
+            setCollision(false)
+        end)
+
         local done = false
         local connection
         connection = RunService.Heartbeat:Connect(function(dt)
@@ -46,7 +59,12 @@ local function run(durationHours, dlog, atlasConfigPath)
             end
             hrp.CFrame = CFrame.new(hrp.Position + (target - hrp.Position).Unit * SPEED * dt)
         end)
+
         while not done do task.wait() end
+
+        -- re-enable collision when done
+        collisionConnection:Disconnect()
+        setCollision(true)
     end
 
     local function waitAnchored(secs)
@@ -79,6 +97,7 @@ local function run(durationHours, dlog, atlasConfigPath)
 
     hrp.Anchored = false
     humanoid.PlatformStand = false
+    setCollision(true)
 
     if _stopFlag then
         dlog("[Commando] Stopped by user")
