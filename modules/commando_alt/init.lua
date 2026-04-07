@@ -29,31 +29,14 @@ local function run(durationHours, dlog, atlasConfigPath)
         return
     end
 
-    -- debug: print anchor state every second
-    local debugAlive = true
-    task.spawn(function()
-        while debugAlive do
-            dlog("[Anchor] hrp.Anchored=" .. tostring(hrp.Anchored) .. " PlatformStand=" .. tostring(humanoid.PlatformStand))
-            task.wait(1)
-        end
-    end)
-
-    -- keep anchored every heartbeat for the entire run
-    local keepAnchored = true
-    local anchorConnection = RunService.Heartbeat:Connect(function()
-        if keepAnchored then
-            hrp.Anchored = true
-            humanoid.PlatformStand = true
-            hrp.AssemblyLinearVelocity = Vector3.zero
-            hrp.AssemblyAngularVelocity = Vector3.zero
-        end
-    end)
-
     local function flyTo(target)
-        dlog("[Commando] flyTo called: " .. tostring(target))
+        humanoid.PlatformStand = true
+        hrp.Anchored = true
         local done = false
         local connection
         connection = RunService.Heartbeat:Connect(function(dt)
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
             local dist = (hrp.Position - target).Magnitude
             if dist < 1 then
                 done = true
@@ -63,11 +46,12 @@ local function run(durationHours, dlog, atlasConfigPath)
             hrp.CFrame = CFrame.new(hrp.Position + (target - hrp.Position).Unit * SPEED * dt)
         end)
         while not done do task.wait() end
-        dlog("[Commando] flyTo done, anchored=" .. tostring(hrp.Anchored))
+        hrp.Anchored = false
+        humanoid.PlatformStand = false
     end
 
     dlog("[Commando] Starting — duration: " .. durationHours .. "h")
-    dlog("[Commando] Flying to start position...")
+    dlog("[Commando] Flying to start...")
     flyTo(POS_START)
 
     while not _stopFlag and os.time() < endTime do
@@ -75,24 +59,23 @@ local function run(durationHours, dlog, atlasConfigPath)
         local remainingH = math.floor((endTime - os.time()) / 360) / 10
         dlog("[Commando] Cycle " .. cycle .. " | " .. remainingH .. "h remaining")
 
+        -- wait at start (anchored so we dont fall)
+        humanoid.PlatformStand = true
+        hrp.Anchored = true
         task.wait(WAIT_SECS)
+        hrp.Anchored = false
+        humanoid.PlatformStand = false
         if _stopFlag then break end
 
-        dlog("[Commando] flying to A")
         flyTo(POS_A)
         if _stopFlag then break end
 
-        dlog("[Commando] flying to B")
         flyTo(POS_B)
         if _stopFlag then break end
 
-        dlog("[Commando] flying to START")
         flyTo(POS_START)
     end
 
-    debugAlive = false
-    keepAnchored = false
-    anchorConnection:Disconnect()
     hrp.Anchored = false
     humanoid.PlatformStand = false
 
