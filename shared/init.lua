@@ -73,7 +73,7 @@ local function init()
         end)
     end)
 
-    -- ── Fuzzy Alt ─────────────────────────────────────────────────────
+    -- ── Fuzzy Alt ──────────────────────────────────────────────────
     local fuzzyAltRunning = false
 
     local function runFuzzyAlt()
@@ -107,6 +107,36 @@ local function init()
         task.wait(2) -- small delay to let the GUI settle
         runFuzzyAlt()
     end
+    -- ── Routes ────────────────────────────────────────────────────────
+    local detection   = loadstring(game:HttpGet(rawBase .. "shared/detection.lua"))()
+    local routeRunner = loadstring(game:HttpGet(rawBase .. "shared/route_runner.lua"))()
+
+    gui.onOpenBuilder(function()
+        local builder = loadstring(game:HttpGet(rawBase .. "modules/routes/builder.lua"))()
+        builder.open(function(route)
+            dlog("Starting route: " .. route.name)
+            gui.setRouteStatus("▶ Running: " .. route.name)
+            task.spawn(function()
+                local ok, err = pcall(function()
+                    routeRunner.run(route, dlog, flyTo, detection)
+                end)
+                if ok then
+                    gui.setRouteStatus("✓ Completed: " .. route.name)
+                    dlog("Route completed: " .. route.name)
+                else
+                    gui.setRouteStatus("✗ Error: " .. tostring(err))
+                    dlog("Route error: " .. tostring(err))
+                end
+            end)
+        end)
+    end)
+
+    gui.onStopRoute(function()
+        routeRunner.stop()
+        gui.setRouteStatus("⏹ Stopped")
+        dlog("Route stopped by user")
+    end)
+
 end
 
 return init
