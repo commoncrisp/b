@@ -116,7 +116,7 @@ local function scanHive()
 end
 
 local function run(comp, dlog, flyTo)
-    local rawBase = "https://raw.githubusercontent.com/commoncrisp/a/main/"
+    local rawBase = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 
     local beeAbilities = loadstring(game:HttpGet(rawBase .. "data/bee_abilities.lua"))()
     local evaluate = loadstring(game:HttpGet(rawBase .. "modules/hive_adjuster/evaluator.lua"))()
