@@ -573,7 +573,55 @@ resetBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ════════════════════════════════════════════════════════════
---  TAB 5: SETTINGS
+--  TAB 5: ROUTES
+-- ════════════════════════════════════════════════════════════
+local routesTab = makeTabFrame()
+tabs["Routes"] = routesTab
+tabBtns["Routes"] = makeTabBtn("🗺 Routes", 5)
+tabBtns["Routes"].MouseButton1Click:Connect(function() switchTab("Routes") end)
+
+local openBuilderCallback = nil
+local stopRouteCallback   = nil
+
+sectionLabel(routesTab, "Route Runner", 1)
+
+local routeStatusBox = Instance.new("Frame", routesTab)
+routeStatusBox.Size = UDim2.new(1, 0, 0, 44)
+routeStatusBox.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+routeStatusBox.BorderSizePixel = 0
+routeStatusBox.LayoutOrder = 2
+Instance.new("UICorner", routeStatusBox).CornerRadius = UDim.new(0, 6)
+local routeStatusPad = Instance.new("UIPadding", routeStatusBox)
+routeStatusPad.PaddingLeft = UDim.new(0, 10)
+routeStatusPad.PaddingTop  = UDim.new(0, 6)
+
+local routeStatusLabel = Instance.new("TextLabel", routeStatusBox)
+routeStatusLabel.Size = UDim2.new(1, -10, 1, 0)
+routeStatusLabel.BackgroundTransparency = 1
+routeStatusLabel.Text = "No route running"
+routeStatusLabel.Font = Enum.Font.Gotham
+routeStatusLabel.TextSize = 12
+routeStatusLabel.TextColor3 = Color3.fromRGB(130, 130, 130)
+routeStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+routeStatusLabel.TextWrapped = true
+
+local openBuilderBtn = makeBtn(routesTab, "📋 OPEN ROUTE BUILDER", 3)
+openBuilderBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 50)
+openBuilderBtn.TextColor3 = Color3.fromRGB(130, 160, 255)
+openBuilderBtn.MouseButton1Click:Connect(function()
+    if openBuilderCallback then openBuilderCallback() end
+end)
+
+local stopRouteBtn = makeBtn(routesTab, "⏹ STOP ROUTE", 4)
+stopRouteBtn.BackgroundColor3 = Color3.fromRGB(60, 28, 28)
+stopRouteBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+stopRouteBtn.MouseButton1Click:Connect(function()F
+    if stopRouteCallback then stopRouteCallback() end
+end)
+
+
+-- ════════════════════════════════════════════════════════════
+--  TAB 6: SETTINGS
 -- ════════════════════════════════════════════════════════════
 local settingsTab = makeTabFrame()
 tabs["Settings"] = settingsTab
@@ -644,4 +692,8 @@ return {
     onDebugToggle      = function(cb) debugToggleCallback = cb end,
     onFuzzyAlt         = function(cb) fuzzyAltCallback = cb end,
     refreshFuzzyStatus = refreshStatus,
+    -- Routes
+    onOpenBuilder  = function(cb) openBuilderCallback = cb end,
+    onStopRoute    = function(cb) stopRouteCallback = cb end,
+    setRouteStatus = function(text) routeStatusLabel.Text = text end,
 }
