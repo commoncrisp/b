@@ -356,8 +356,9 @@ local function open(onRun)
     local compBox = input(aAdj, UDim2.new(0,260,0,26), UDim2.new(0,104,0,2),  "e.g. 4r4b")
     compBox:GetPropertyChangedSignal("Text"):Connect(function() currentAction.comp = compBox.Text end)
     lbl(aAdj, "Atlas config", UDim2.new(0,100,0,26), UDim2.new(0,0,0,34), 11, Color3.fromRGB(150,150,150))
-    local adjAtlasDd = makeDropdown(aAdj, ATLAS_OPTIONS_OPT, UDim2.new(0,350,0,26), UDim2.new(0,104,0,34), function(v)
-        currentAction.atlasConfig = v ~= "none" and v or nil
+    local adjAtlasBox = input(aAdj, UDim2.new(0,260,0,26), UDim2.new(0,104,0,34), "e.g. atlas/1.json")
+    adjAtlasBox:GetPropertyChangedSignal("Text"):Connect(function()
+        currentAction.atlasConfig = adjAtlasBox.Text ~= "" and adjAtlasBox.Text or nil
     end)
 
 
@@ -369,9 +370,11 @@ local function open(onRun)
     local intBox = input(aRJ, UDim2.new(0,120,0,26), UDim2.new(0,104,0,2),  "1–300 minutes")
     intBox:GetPropertyChangedSignal("Text"):Connect(function() currentAction.interval = tonumber(intBox.Text) end)
     lbl(aRJ, "Atlas config",   UDim2.new(0,100,0,26), UDim2.new(0,0,0,34), 11, Color3.fromRGB(150,150,150))
-    local rjAtlasDd = makeDropdown(aRJ, ATLAS_OPTIONS_OPT, UDim2.new(0,350,0,26), UDim2.new(0,104,0,34), function(v)
-        currentAction.atlasConfig = v ~= "none" and v or nil
+    local rjAtlasBox = input(aRJ, UDim2.new(0,260,0,26), UDim2.new(0,104,0,34), "e.g. atlas/1.json")
+    rjAtlasBox:GetPropertyChangedSignal("Text"):Connect(function()
+        currentAction.atlasConfig = rjAtlasBox.Text ~= "" and rjAtlasBox.Text or nil
     end)
+
 
 
     -- Trigger section
@@ -430,8 +433,9 @@ local function open(onRun)
         compBox.Text = currentAction.comp or ""
         intBox.Text  = currentAction.interval and tostring(currentAction.interval) or ""
 
-        adjAtlasDd.setValue(currentAction.atlasConfig or "none")
-        rjAtlasDd.setValue(currentAction.atlasConfig or "none")
+        adjAtlasBox.Text = currentAction.atlasConfig or ""
+        rjAtlasBox.Text  = currentAction.atlasConfig or ""
+
 
 
         trgTypeDd.setValue(currentTrigger.type)
