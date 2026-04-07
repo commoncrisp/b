@@ -133,6 +133,9 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
             -- instant — nothing to cancel
 
         elseif action.type == "adjuster_loop" then
+            if action.atlasConfig then
+                applyAtlasConfig(action.atlasConfig, dlog)
+            end
             actionThread = task.spawn(function()
                 while not actionStop and not _stopFlag do
                     dlog("[Adjuster] Loading comp: " .. action.comp)
@@ -145,14 +148,15 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
                     else
                         dlog("[Adjuster] ERROR: comp '" .. action.comp .. "' not found")
                     end
-                    if not actionStop and not _stopFlag then
-                        task.wait(10)
-                    end
+                    if not actionStop and not _stopFlag then task.wait(10) end
                 end
                 dlog("[Adjuster] Action stopped")
             end)
-
+        
         elseif action.type == "rj_buyer" then
+            if action.atlasConfig then
+                applyAtlasConfig(action.atlasConfig, dlog)
+            end
             actionThread = task.spawn(function()
                 while not actionStop and not _stopFlag do
                     local honey  = detection.getHoney()
@@ -164,13 +168,11 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
                     else
                         dlog("[RJ Buyer] Not enough honey to buy RJ")
                     end
-
                     local waitSecs = (action.interval or 10) * 60
                     dlog("[RJ Buyer] Next buy in " .. (action.interval or 10) .. " min")
                     local elapsed = 0
                     while elapsed < waitSecs and not actionStop and not _stopFlag do
-                        task.wait(10)
-                        elapsed = elapsed + 10
+                        task.wait(10); elapsed = elapsed + 10
                     end
                 end
                 dlog("[RJ Buyer] Action stopped")
