@@ -29,16 +29,14 @@ local function run(durationHours, dlog, atlasConfigPath)
         return
     end
 
-    -- anchor once, keep anchored the entire run
-    humanoid.PlatformStand = true
-    hrp.Anchored = true
-
+    -- keep anchored every heartbeat for the entire run
     local keepAnchored = true
-    task.spawn(function()
-        while keepAnchored do
+    local anchorConnection = RunService.Heartbeat:Connect(function()
+        if keepAnchored then
             hrp.Anchored = true
             humanoid.PlatformStand = true
-            task.wait()
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
         end
     end)
 
@@ -46,8 +44,6 @@ local function run(durationHours, dlog, atlasConfigPath)
         local done = false
         local connection
         connection = RunService.Heartbeat:Connect(function(dt)
-            hrp.AssemblyLinearVelocity = Vector3.zero
-            hrp.AssemblyAngularVelocity = Vector3.zero
             local dist = (hrp.Position - target).Magnitude
             if dist < 1 then
                 done = true
@@ -80,8 +76,9 @@ local function run(durationHours, dlog, atlasConfigPath)
         flyTo(POS_START)
     end
 
-    -- only unanchor at the very end
+    -- unanchor at the very end
     keepAnchored = false
+    anchorConnection:Disconnect()
     hrp.Anchored = false
     humanoid.PlatformStand = false
 
