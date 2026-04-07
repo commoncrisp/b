@@ -29,6 +29,15 @@ local function run(durationHours, dlog, atlasConfigPath)
         return
     end
 
+    -- debug: print anchor state every second
+    local debugAlive = true
+    task.spawn(function()
+        while debugAlive do
+            dlog("[Anchor] hrp.Anchored=" .. tostring(hrp.Anchored) .. " PlatformStand=" .. tostring(humanoid.PlatformStand))
+            task.wait(1)
+        end
+    end)
+
     -- keep anchored every heartbeat for the entire run
     local keepAnchored = true
     local anchorConnection = RunService.Heartbeat:Connect(function()
@@ -41,6 +50,7 @@ local function run(durationHours, dlog, atlasConfigPath)
     end)
 
     local function flyTo(target)
+        dlog("[Commando] flyTo called: " .. tostring(target))
         local done = false
         local connection
         connection = RunService.Heartbeat:Connect(function(dt)
@@ -53,6 +63,7 @@ local function run(durationHours, dlog, atlasConfigPath)
             hrp.CFrame = CFrame.new(hrp.Position + (target - hrp.Position).Unit * SPEED * dt)
         end)
         while not done do task.wait() end
+        dlog("[Commando] flyTo done, anchored=" .. tostring(hrp.Anchored))
     end
 
     dlog("[Commando] Starting — duration: " .. durationHours .. "h")
@@ -67,16 +78,19 @@ local function run(durationHours, dlog, atlasConfigPath)
         task.wait(WAIT_SECS)
         if _stopFlag then break end
 
+        dlog("[Commando] flying to A")
         flyTo(POS_A)
         if _stopFlag then break end
 
+        dlog("[Commando] flying to B")
         flyTo(POS_B)
         if _stopFlag then break end
 
+        dlog("[Commando] flying to START")
         flyTo(POS_START)
     end
 
-    -- unanchor at the very end
+    debugAlive = false
     keepAnchored = false
     anchorConnection:Disconnect()
     hrp.Anchored = false
