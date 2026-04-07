@@ -575,8 +575,31 @@ end)
 -- ════════════════════════════════════════════════════════════
 --  TAB 5: ROUTES
 -- ════════════════════════════════════════════════════════════
-local routesTab = makeTabFrame()
-tabs["Routes"] = routesTab
+local routesTabOuter = Instance.new("Frame", contentArea)
+routesTabOuter.Size = UDim2.new(1, 0, 1, 0)
+routesTabOuter.BackgroundTransparency = 1
+routesTabOuter.Visible = false
+
+local routesTab = Instance.new("ScrollingFrame", routesTabOuter)
+routesTab.Size = UDim2.new(1, 0, 1, 0)
+routesTab.BackgroundTransparency = 1
+routesTab.BorderSizePixel = 0
+routesTab.ScrollBarThickness = 4
+routesTab.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local routesTabPad = Instance.new("UIPadding", routesTab)
+routesTabPad.PaddingLeft  = UDim.new(0, 14)
+routesTabPad.PaddingRight = UDim.new(0, 14)
+routesTabPad.PaddingTop   = UDim.new(0, 12)
+
+local routesTabLayout = Instance.new("UIListLayout", routesTab)
+routesTabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+routesTabLayout.Padding = UDim.new(0, 10)
+routesTabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    routesTab.CanvasSize = UDim2.new(0, 0, 0, routesTabLayout.AbsoluteContentSize.Y + 20)
+end)
+
+tabs["Routes"] = routesTabOuter
 tabBtns["Routes"] = makeTabBtn("🗺 Routes", 5)
 tabBtns["Routes"].MouseButton1Click:Connect(function() switchTab("Routes") end)
 
@@ -618,6 +641,7 @@ stopRouteBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
 stopRouteBtn.MouseButton1Click:Connect(function()
     if stopRouteCallback then stopRouteCallback() end
 end)
+
 local resetProgressBtn = makeBtn(routesTab, "⚠ RESET PROGRESS", 5)
 resetProgressBtn.BackgroundColor3 = Color3.fromRGB(60, 28, 28)
 resetProgressBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
