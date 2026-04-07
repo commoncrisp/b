@@ -1,12 +1,12 @@
 -- modules/commando_alt/init.lua
-local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local RAW_BASE = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 
 local POS_START = Vector3.new(460,   52.5, 166)
 local POS_A     = Vector3.new(480,   52.5, 154.3)
 local POS_B     = Vector3.new(480,   52.5, 177)
 local WAIT_SECS = 5
-local TWEEN_SPEED = 70
+local SPEED     = 70
 
 local _stopFlag = false
 
@@ -29,30 +29,30 @@ local function run(durationHours, dlog, atlasConfigPath)
         return
     end
 
-    local function tweenTo(pos)
-        local dist = (hrp.Position - pos).Magnitude
-        local dur = math.max(0.1, dist / TWEEN_SPEED)
-        local t = TweenService:Create(hrp, TweenInfo.new(dur, Enum.EasingStyle.Linear), { CFrame = CFrame.new(pos) })
-        t:Play()
-        t.Completed:Wait()
+    local function flyTo(target)
+        humanoid.PlatformStand = true
+        hrp.Anchored = true
+        local done = false
+        local connection
+        connection = RunService.Heartbeat:Connect(function(dt)
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+            local dist = (hrp.Position - target).Magnitude
+            if dist < 1 then
+                done = true
+                connection:Disconnect()
+                return
+            end
+            hrp.CFrame = CFrame.new(hrp.Position + (target - hrp.Position).Unit * SPEED * dt)
+        end)
+        while not done do task.wait() end
+        hrp.Anchored = false
+        humanoid.PlatformStand = false
     end
 
     dlog("[Commando] Starting — duration: " .. durationHours .. "h")
-
-    humanoid.PlatformStand = true
-    hrp.Anchored = true
-
-    local keepAnchored = true
-    task.spawn(function()
-        while keepAnchored do
-            hrp.Anchored = true
-            humanoid.PlatformStand = true
-            task.wait()
-        end
-    end)
-
-    dlog("[Commando] Tweening to start position...")
-    tweenTo(POS_START)
+    dlog("[Commando] Flying to start position...")
+    flyTo(POS_START)
 
     while not _stopFlag and os.time() < endTime do
         cycle = cycle + 1
@@ -62,16 +62,15 @@ local function run(durationHours, dlog, atlasConfigPath)
         task.wait(WAIT_SECS)
         if _stopFlag then break end
 
-        tweenTo(POS_A)
+        flyTo(POS_A)
         if _stopFlag then break end
 
-        tweenTo(POS_B)
+        flyTo(POS_B)
         if _stopFlag then break end
 
-        tweenTo(POS_START)
+        flyTo(POS_START)
     end
 
-    keepAnchored = false
     hrp.Anchored = false
     humanoid.PlatformStand = false
 
