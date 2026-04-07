@@ -1,61 +1,101 @@
+-- modules/commando_alt/init.lua
 local TweenService = game:GetService("TweenService")
-local lp = game:GetService("Players").LocalPlayer
-local debugConsole = loadstring(game:HttpGet("https://raw.githubusercontent.com/commoncrisp/b/main/shared/debug_console.lua"))()
-local dlog = debugConsole.log
-debugConsole.setVisible(true)
+local RAW_BASE = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 
-local char = lp.Character
-local hrp = char and char:FindFirstChild("HumanoidRootPart")
-local humanoid = char and char:FindFirstChild("Humanoid")
-
-if not hrp then dlog("no hrp!") return end
-
+local POS_START = Vector3.new(460,   52.5, 166)
+local POS_A     = Vector3.new(480,   52.5, 154.3)
+local POS_B     = Vector3.new(480,   52.5, 177)
+local WAIT_SECS = 5
 local TWEEN_SPEED = 70
-local POS_START = Vector3.new(460, 52.5, 166)
-local POS_A     = Vector3.new(480, 52.5, 154.3)
-local POS_B     = Vector3.new(480, 52.5, 177)
 
-local function tweenTo(pos)
-    local dist = (hrp.Position - pos).Magnitude
-    local dur = math.max(0.1, dist / TWEEN_SPEED)
-    local t = TweenService:Create(hrp, TweenInfo.new(dur, Enum.EasingStyle.Linear), { CFrame = CFrame.new(pos) })
-    t:Play()
-    t.Completed:Wait()
+local _stopFlag = false
+
+local function run(durationHours, dlog, atlasConfigPath)
+    local debugConsole = loadstring(game:HttpGet(RAW_BASE .. "shared/debug_console.lua"))()
+    dlog = dlog or debugConsole.log
+    debugConsole.setVisible(true)
+
+    _stopFlag = false
+    local endTime = os.clock() + (durationHours * 3600)
+    local cycle = 0
+
+    local lp = game:GetService("Players").LocalPlayer
+    local char = lp.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char and char:FindFirstChild("Humanoid")
+
+    if not hrp or not humanoid then
+        dlog("[Commando] ERROR: No character found")
+        return
+    end
+
+    local function tweenTo(pos)
+        local dist = (hrp.Position - pos).Magnitude
+        local dur = math.max(0.1, dist / TWEEN_SPEED)
+        local t = TweenService:Create(hrp, TweenInfo.new(dur, Enum.EasingStyle.Linear), { CFrame = CFrame.new(pos) })
+        t:Play()
+        t.Completed:Wait()
+    end
+
+    dlog("[Commando] Starting — duration: " .. durationHours .. "h")
+
+    humanoid.PlatformStand = true
+    hrp.Anchored = true
+
+    local keepAnchored = true
+    task.spawn(function()
+        while keepAnchored do
+            hrp.Anchored = true
+            humanoid.PlatformStand = true
+            task.wait()
+        end
+    end)
+
+    dlog("[Commando] Tweening to start position...")
+    tweenTo(POS_START)
+
+    while not _stopFlag and os.clock() < endTime do
+        cycle = cycle + 1
+        local remainingH = math.floor((endTime - os.clock()) / 360) / 10
+        dlog("[Commando] Cycle " .. cycle .. " | " .. remainingH .. "h remaining")
+
+        task.wait(WAIT_SECS)
+        if _stopFlag then break end
+
+        tweenTo(POS_A)
+        if _stopFlag then break end
+
+        tweenTo(POS_B)
+        if _stopFlag then break end
+
+        tweenTo(POS_START)
+    end
+
+    keepAnchored = false
+    hrp.Anchored = false
+    humanoid.PlatformStand = false
+
+    if _stopFlag then
+        dlog("[Commando] Stopped by user")
+    else
+        dlog("[Commando] Duration complete!")
+        if atlasConfigPath then
+            dlog("[Commando] Swapping atlas config: " .. atlasConfigPath)
+            pcall(function()
+                local data = readfile(atlasConfigPath)
+                writefile("Atlas/Preset 1.json", data)
+                writefile("Atlas/Bee Swarm Simulator/Configs/Preset 1.json", data)
+            end)
+            dlog("[Commando] Reloading Atlas...")
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"))()
+            end)
+        end
+    end
 end
 
-dlog("anchoring...")
-humanoid.PlatformStand = true
-hrp.Anchored = true
+local function stop()
+    _stopFlag = true
+end
 
-local keepAnchored = true
-task.spawn(function()
-    while keepAnchored do
-        hrp.Anchored = true
-        humanoid.PlatformStand = true
-        task.wait()
-    end
-end)
-
-dlog("tweening to start...")
-tweenTo(POS_START)
-task.wait(2)
-
-dlog("tweening to A...")
-tweenTo(POS_A)
-dlog("arrived at A, anchored: " .. tostring(hrp.Anchored))
-task.wait(2)
-
-dlog("tweening to B...")
-tweenTo(POS_B)
-dlog("arrived at B, anchored: " .. tostring(hrp.Anchored))
-task.wait(2)
-
-dlog("tweening back to start...")
-tweenTo(POS_START)
-dlog("back at start, anchored: " .. tostring(hrp.Anchored))
-task.wait(2)
-
-keepAnchored = false
-hrp.Anchored = false
-humanoid.PlatformStand = false
-dlog("done, unanchored")
+return { run = run, stop = stop }
