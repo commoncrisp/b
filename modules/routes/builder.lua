@@ -4,6 +4,8 @@ local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer" }
 local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
 local ATLAS_OPTIONS = { "atlas/1.json","atlas/2.json","atlas/stop.json","atlas/diamond mats.json","atlas/diamond mats vial.json","atlas/diamond honey.json" }
+local ATLAS_OPTIONS_OPT = { "none","atlas/1.json","atlas/2.json","atlas/stop.json","atlas/diamond mats.json","atlas/diamond mats vial.json","atlas/diamond honey.json" }
+
 
 -- ── GUI helpers ───────────────────────────────────────────────────────────────
 local function corner(p, r) Instance.new("UICorner", p).CornerRadius = UDim.new(0, r or 6) end
@@ -347,16 +349,30 @@ local function open(onRun)
     local atlasDd = makeDropdown(aAtlas, ATLAS_OPTIONS, UDim2.new(0,350,0,28), UDim2.new(0,104,0,1), function(v) currentAction.config = v end)
 
     -- adjuster_loop fields
-    local aAdj   = row(actSec); acfFrames["adjuster_loop"] = aAdj; aAdj.Visible = false
-    local compBox = input(nil, UDim2.new(), UDim2.new(), "e.g. 4r4b")
-    fieldRow(aAdj, "Comp name", compBox)
+    local aAdj = Instance.new("Frame", actSec)
+    aAdj.Size = UDim2.new(1,0,0,64); aAdj.BackgroundTransparency = 1; aAdj.Visible = false
+    acfFrames["adjuster_loop"] = aAdj
+    lbl(aAdj, "Comp name",    UDim2.new(0,100,0,26), UDim2.new(0,0,0,2),  11, Color3.fromRGB(150,150,150))
+    local compBox = input(aAdj, UDim2.new(0,260,0,26), UDim2.new(0,104,0,2),  "e.g. 4r4b")
     compBox:GetPropertyChangedSignal("Text"):Connect(function() currentAction.comp = compBox.Text end)
+    lbl(aAdj, "Atlas config", UDim2.new(0,100,0,26), UDim2.new(0,0,0,34), 11, Color3.fromRGB(150,150,150))
+    local adjAtlasDd = makeDropdown(aAdj, ATLAS_OPTIONS_OPT, UDim2.new(0,350,0,26), UDim2.new(0,104,0,34), function(v)
+        currentAction.atlasConfig = v ~= "none" and v or nil
+    end)
+
 
     -- rj_buyer fields
-    local aRJ    = row(actSec); acfFrames["rj_buyer"] = aRJ; aRJ.Visible = false
-    local intBox  = input(nil, UDim2.new(), UDim2.new(), "1–300 minutes")
-    fieldRow(aRJ, "Interval (min)", intBox)
+    local aRJ = Instance.new("Frame", actSec)
+    aRJ.Size = UDim2.new(1,0,0,64); aRJ.BackgroundTransparency = 1; aRJ.Visible = false
+    acfFrames["rj_buyer"] = aRJ
+    lbl(aRJ, "Interval (min)", UDim2.new(0,100,0,26), UDim2.new(0,0,0,2),  11, Color3.fromRGB(150,150,150))
+    local intBox = input(aRJ, UDim2.new(0,120,0,26), UDim2.new(0,104,0,2),  "1–300 minutes")
     intBox:GetPropertyChangedSignal("Text"):Connect(function() currentAction.interval = tonumber(intBox.Text) end)
+    lbl(aRJ, "Atlas config",   UDim2.new(0,100,0,26), UDim2.new(0,0,0,34), 11, Color3.fromRGB(150,150,150))
+    local rjAtlasDd = makeDropdown(aRJ, ATLAS_OPTIONS_OPT, UDim2.new(0,350,0,26), UDim2.new(0,104,0,34), function(v)
+        currentAction.atlasConfig = v ~= "none" and v or nil
+    end)
+
 
     -- Trigger section
     local trgSec   = section(stepScroll, "Trigger")
@@ -413,6 +429,10 @@ local function open(onRun)
         atlasDd.setValue(currentAction.config or ATLAS_OPTIONS[1])
         compBox.Text = currentAction.comp or ""
         intBox.Text  = currentAction.interval and tostring(currentAction.interval) or ""
+
+        adjAtlasDd.setValue(currentAction.atlasConfig or "none")
+        rjAtlasDd.setValue(currentAction.atlasConfig or "none")
+
 
         trgTypeDd.setValue(currentTrigger.type)
         for t, f in pairs(trFrames) do f.Visible = (t == currentTrigger.type) end
