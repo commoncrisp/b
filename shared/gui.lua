@@ -625,7 +625,7 @@ end)
 -- ════════════════════════════════════════════════════════════
 local settingsTab = makeTabFrame()
 tabs["Settings"] = settingsTab
-tabBtns["Settings"] = makeTabBtn("⚙ Settings", 5)
+tabBtns["Settings"] = makeTabBtn("⚙ Settings", 6)
 tabBtns["Settings"].MouseButton1Click:Connect(function() switchTab("Settings") end)
 
 sectionLabel(settingsTab, "Webhook URL", 1)
