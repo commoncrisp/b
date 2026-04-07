@@ -658,14 +658,121 @@ resetProgressBtn.MouseButton1Click:Connect(function()
     routeStatusLabel.Text = "Progress cleared (" .. count .. " files deleted)"
 end)
 
+-- ════════════════════════════════════════════════════════════
+--  TAB 6: COMMANDO ALT
+-- ════════════════════════════════════════════════════════════
+local commandoTabOuter = Instance.new("Frame", contentArea)
+commandoTabOuter.Size = UDim2.new(1, 0, 1, 0)
+commandoTabOuter.BackgroundTransparency = 1
+commandoTabOuter.Visible = false
+
+local commandoTab = Instance.new("ScrollingFrame", commandoTabOuter)
+commandoTab.Size = UDim2.new(1, 0, 1, 0)
+commandoTab.BackgroundTransparency = 1
+commandoTab.BorderSizePixel = 0
+commandoTab.ScrollBarThickness = 4
+commandoTab.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local commandoTabPad = Instance.new("UIPadding", commandoTab)
+commandoTabPad.PaddingLeft  = UDim.new(0, 14)
+commandoTabPad.PaddingRight = UDim.new(0, 14)
+commandoTabPad.PaddingTop   = UDim.new(0, 12)
+
+local commandoTabLayout = Instance.new("UIListLayout", commandoTab)
+commandoTabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+commandoTabLayout.Padding = UDim.new(0, 10)
+commandoTabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    commandoTab.CanvasSize = UDim2.new(0, 0, 0, commandoTabLayout.AbsoluteContentSize.Y + 20)
+end)
+
+tabs["Commando"] = commandoTabOuter
+tabBtns["Commando"] = makeTabBtn("⚔ Commando", 6)
+tabBtns["Commando"].MouseButton1Click:Connect(function() switchTab("Commando") end)
+
+local commandoCallback = nil
+local commandoStopCallback = nil
+
+sectionLabel(commandoTab, "Commando Alt", 1)
+
+local commandoStatusBox = Instance.new("Frame", commandoTab)
+commandoStatusBox.Size = UDim2.new(1, 0, 0, 44)
+commandoStatusBox.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+commandoStatusBox.BorderSizePixel = 0
+commandoStatusBox.LayoutOrder = 2
+Instance.new("UICorner", commandoStatusBox).CornerRadius = UDim.new(0, 6)
+local commandoStatusPad = Instance.new("UIPadding", commandoStatusBox)
+commandoStatusPad.PaddingLeft = UDim.new(0, 10)
+commandoStatusPad.PaddingTop  = UDim.new(0, 6)
+
+local commandoStatusLabel = Instance.new("TextLabel", commandoStatusBox)
+commandoStatusLabel.Size = UDim2.new(1, -10, 1, 0)
+commandoStatusLabel.BackgroundTransparency = 1
+commandoStatusLabel.Text = "Not running"
+commandoStatusLabel.Font = Enum.Font.Gotham
+commandoStatusLabel.TextSize = 12
+commandoStatusLabel.TextColor3 = Color3.fromRGB(130, 130, 130)
+commandoStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+commandoStatusLabel.TextWrapped = true
+
+sectionLabel(commandoTab, "Duration (hours)", 3)
+
+local commandoDurationRow = Instance.new("Frame", commandoTab)
+commandoDurationRow.Size = UDim2.new(1, 0, 0, 34)
+commandoDurationRow.BackgroundTransparency = 1
+commandoDurationRow.LayoutOrder = 4
+
+local commandoDurationBox = Instance.new("TextBox", commandoDurationRow)
+commandoDurationBox.Size = UDim2.new(1, -90, 1, 0)
+commandoDurationBox.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+commandoDurationBox.BorderSizePixel = 0
+commandoDurationBox.Text = "60"
+commandoDurationBox.PlaceholderText = "Hours..."
+commandoDurationBox.PlaceholderColor3 = Color3.fromRGB(70, 70, 70)
+commandoDurationBox.Font = Enum.Font.Code
+commandoDurationBox.TextSize = 12
+commandoDurationBox.TextColor3 = Color3.fromRGB(200, 200, 200)
+commandoDurationBox.ClearTextOnFocus = false
+commandoDurationBox.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", commandoDurationBox).CornerRadius = UDim.new(0, 6)
+Instance.new("UIPadding", commandoDurationBox).PaddingLeft = UDim.new(0, 8)
+
+local startCommandoBtn = Instance.new("TextButton", commandoDurationRow)
+startCommandoBtn.Size = UDim2.new(0, 80, 1, 0)
+startCommandoBtn.Position = UDim2.new(1, -80, 0, 0)
+startCommandoBtn.BackgroundColor3 = Color3.fromRGB(40, 80, 40)
+startCommandoBtn.Text = "▶ START"
+startCommandoBtn.Font = Enum.Font.GothamBold
+startCommandoBtn.TextSize = 11
+startCommandoBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+startCommandoBtn.BorderSizePixel = 0
+Instance.new("UICorner", startCommandoBtn).CornerRadius = UDim.new(0, 6)
+startCommandoBtn.MouseButton1Click:Connect(function()
+    if commandoCallback then
+        local hours = tonumber(commandoDurationBox.Text)
+        if not hours or hours <= 0 then
+            commandoStatusLabel.Text = "Invalid duration!"
+            return
+        end
+        commandoCallback(hours)
+    end
+end)
+
+local stopCommandoBtn = makeBtn(commandoTab, "⏹ STOP COMMANDO", 5)
+stopCommandoBtn.BackgroundColor3 = Color3.fromRGB(60, 28, 28)
+stopCommandoBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+stopCommandoBtn.MouseButton1Click:Connect(function()
+    if commandoStopCallback then commandoStopCallback() end
+end)
+
+
 
 
 -- ════════════════════════════════════════════════════════════
---  TAB 6: SETTINGS
+--  TAB 7: SETTINGS
 -- ════════════════════════════════════════════════════════════
 local settingsTab = makeTabFrame()
 tabs["Settings"] = settingsTab
-tabBtns["Settings"] = makeTabBtn("⚙ Settings", 6)
+tabBtns["Settings"] = makeTabBtn("⚙ Settings", 7)
 tabBtns["Settings"].MouseButton1Click:Connect(function() switchTab("Settings") end)
 
 sectionLabel(settingsTab, "Webhook URL", 1)
@@ -736,4 +843,7 @@ return {
     onOpenBuilder  = function(cb) openBuilderCallback = cb end,
     onStopRoute    = function(cb) stopRouteCallback = cb end,
     setRouteStatus = function(text) routeStatusLabel.Text = text end,
+    onCommando     = function(cb) commandoCallback = cb end,
+    onCommandoStop = function(cb) commandoStopCallback = cb end,
+    setCommandoStatus = function(text) commandoStatusLabel.Text = text end,
 }
