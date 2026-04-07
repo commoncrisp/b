@@ -566,7 +566,7 @@ resetBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
 resetBtn.MouseButton1Click:Connect(function()
     local progressFile = PROGRESS_FILE_PREFIX .. lp.Name .. ".json"
     pcall(function() delfile(progressFile) end)
-    startFuzzyBtn.Text = "▶ START FUZZY ALT"
+    startFuzzyBtn.Text = "▶ START FUZZY EVERYTHING"
     startFuzzyBtn.BackgroundColor3 = Color3.fromRGB(40, 80, 40)
     startFuzzyBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
     refreshStatus()
@@ -615,7 +615,7 @@ end)
 local stopRouteBtn = makeBtn(routesTab, "⏹ STOP ROUTE", 4)
 stopRouteBtn.BackgroundColor3 = Color3.fromRGB(60, 28, 28)
 stopRouteBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-stopRouteBtn.MouseButton1Click:Connect(function()F
+stopRouteBtn.MouseButton1Click:Connect(function()
     if stopRouteCallback then stopRouteCallback() end
 end)
 
