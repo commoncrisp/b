@@ -29,9 +29,20 @@ local function run(durationHours, dlog, atlasConfigPath)
         return
     end
 
+    -- anchor once, keep anchored the entire run
+    humanoid.PlatformStand = true
+    hrp.Anchored = true
+
+    local keepAnchored = true
+    task.spawn(function()
+        while keepAnchored do
+            hrp.Anchored = true
+            humanoid.PlatformStand = true
+            task.wait()
+        end
+    end)
+
     local function flyTo(target)
-        humanoid.PlatformStand = true
-        hrp.Anchored = true
         local done = false
         local connection
         connection = RunService.Heartbeat:Connect(function(dt)
@@ -46,8 +57,6 @@ local function run(durationHours, dlog, atlasConfigPath)
             hrp.CFrame = CFrame.new(hrp.Position + (target - hrp.Position).Unit * SPEED * dt)
         end)
         while not done do task.wait() end
-        hrp.Anchored = false
-        humanoid.PlatformStand = false
     end
 
     dlog("[Commando] Starting — duration: " .. durationHours .. "h")
@@ -71,6 +80,8 @@ local function run(durationHours, dlog, atlasConfigPath)
         flyTo(POS_START)
     end
 
+    -- only unanchor at the very end
+    keepAnchored = false
     hrp.Anchored = false
     humanoid.PlatformStand = false
 
