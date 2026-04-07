@@ -16,6 +16,6 @@ end
 GuiService.ErrorMessageChanged:Connect(onErrorMessageChanged)
 
 -- BSS Tools
-local rawBase = "https://raw.githubusercontent.com/commoncrisp//main/"
+local rawBase = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 local init = loadstring(game:HttpGet(rawBase .. "shared/init.lua"))()
 init()
