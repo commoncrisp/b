@@ -618,6 +618,22 @@ stopRouteBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
 stopRouteBtn.MouseButton1Click:Connect(function()
     if stopRouteCallback then stopRouteCallback() end
 end)
+local resetProgressBtn = makeBtn(routesTab, "⚠ RESET PROGRESS", 5)
+resetProgressBtn.BackgroundColor3 = Color3.fromRGB(60, 28, 28)
+resetProgressBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+resetProgressBtn.MouseButton1Click:Connect(function()
+    local files = listfiles("")
+    local count = 0
+    for _, f in pairs(files) do
+        local name = f:match("([^/\\]+)$")
+        if name and name:match("^bss_runner_") then
+            pcall(function() delfile(f) end)
+            count = count + 1
+        end
+    end
+    routeStatusLabel.Text = "Progress cleared (" .. count .. " files deleted)"
+end)
+
 
 
 -- ════════════════════════════════════════════════════════════
