@@ -16,7 +16,7 @@ local function run(durationHours, dlog, atlasConfigPath)
     debugConsole.setVisible(true)
 
     _stopFlag = false
-    local endTime = os.clock() + (durationHours * 3600)
+    local endTime = os.time() + (durationHours * 3600)
     local cycle = 0
 
     local lp = game:GetService("Players").LocalPlayer
@@ -54,9 +54,9 @@ local function run(durationHours, dlog, atlasConfigPath)
     dlog("[Commando] Tweening to start position...")
     tweenTo(POS_START)
 
-    while not _stopFlag and os.clock() < endTime do
+    while not _stopFlag and os.time() < endTime do
         cycle = cycle + 1
-        local remainingH = math.floor((endTime - os.clock()) / 360) / 10
+        local remainingH = math.floor((endTime - os.time()) / 360) / 10
         dlog("[Commando] Cycle " .. cycle .. " | " .. remainingH .. "h remaining")
 
         task.wait(WAIT_SECS)
