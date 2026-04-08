@@ -3,6 +3,7 @@ local lp          = Players.LocalPlayer
 local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer" }
 local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
+
 local ATLAS_OPTIONS = {}
 pcall(function()
     for _, f in pairs(listfiles("atlas/")) do
@@ -14,9 +15,18 @@ pcall(function()
 end)
 if #ATLAS_OPTIONS == 0 then ATLAS_OPTIONS = { "atlas/1.json" } end
 table.sort(ATLAS_OPTIONS)
-local ATLAS_OPTIONS_OPT = ATLAS_OPTIONS
 
-
+local COMP_OPTIONS = {}
+pcall(function()
+    for _, f in pairs(listfiles("")) do
+        local name = f:match("bss_comp_(.+)%.json$")
+        if name then
+            table.insert(COMP_OPTIONS, name)
+        end
+    end
+end)
+if #COMP_OPTIONS == 0 then COMP_OPTIONS = { "4r4b" } end
+table.sort(COMP_OPTIONS)
 
 -- ── GUI helpers ───────────────────────────────────────────────────────────────
 local function corner(p, r) Instance.new("UICorner", p).CornerRadius = UDim.new(0, r or 6) end
@@ -156,20 +166,18 @@ local function open(onRun)
     content.Size = UDim2.new(1,0,1,-36); content.Position = UDim2.new(0,0,0,36)
     content.BackgroundTransparency = 1; content.BorderSizePixel = 0
 
-    -- panels
     local panels = {}
     local function showPanel(name)
         for k, p in pairs(panels) do p.Visible = (k == name) end
     end
 
-    -- shared state
     local editingSteps     = {}
     local editingName      = ""
     local editingStepIdx   = nil
     local currentAction    = {}
     local currentTrigger   = {}
 
-    local refreshRouteList, refreshEditor, loadStepEditor  -- forward declarations
+    local refreshRouteList, refreshEditor, loadStepEditor
 
     -- ════════════════════════════════════════════════════════════════
     --  PANEL 1 — Route List
@@ -216,7 +224,7 @@ local function open(onRun)
                     editingSteps = {}
                     for i, s in ipairs(route.steps) do
                         editingSteps[i] = {
-                            action  = { type=s.action.type,  config=s.action.config,  comp=s.action.comp,  interval=s.action.interval },
+                            action  = { type=s.action.type, config=s.action.config, comp=s.action.comp, interval=s.action.interval, atlasConfig=s.action.atlasConfig },
                             trigger = { type=s.trigger.type, amount=s.trigger.amount, name=s.trigger.name, minutes=s.trigger.minutes },
                         }
                     end
@@ -246,7 +254,7 @@ local function open(onRun)
     local edBackB   = btn(editorPanel, "← BACK",       UDim2.new(0,90,0,30),  UDim2.new(1,-104,1,-40),  Color3.fromRGB(38,38,38),  Color3.fromRGB(180,180,180))
 
     local function stepSummary(s)
-        local a = s.action;  local t = s.trigger
+        local a = s.action; local t = s.trigger
         local aStr = a.type
         if a.type=="atlas_config"  then aStr = "atlas:" .. (a.config or "?"):match("([^/]+%.json)$"):gsub("%.json","") end
         if a.type=="adjuster_loop" then aStr = "adj:"   .. (a.comp or "?") end
@@ -317,8 +325,8 @@ local function open(onRun)
     local confirmB = btn(stepPanel, "✓ CONFIRM", UDim2.new(0,110,0,30), UDim2.new(0,14,1,-40),   Color3.fromRGB(30,60,30),  Color3.fromRGB(100,220,100))
     local stBackB  = btn(stepPanel, "← BACK",    UDim2.new(0,90,0,30),  UDim2.new(1,-104,1,-40), Color3.fromRGB(38,38,38),  Color3.fromRGB(180,180,180))
 
-    local acfFrames = {}  -- action config frames keyed by type
-    local trFrames  = {}  -- trigger config frames keyed by type
+    local acfFrames = {}
+    local trFrames  = {}
 
     local function section(parent, title)
         local f = Instance.new("Frame", parent)
@@ -355,7 +363,7 @@ local function open(onRun)
     end)
 
     -- atlas_config fields
-    local aAtlas  = row(actSec); acfFrames["atlas_config"] = aAtlas
+    local aAtlas = row(actSec); acfFrames["atlas_config"] = aAtlas
     lbl(aAtlas, "Config", UDim2.new(0,100,1,0), UDim2.new(0,0,0,0), 11, Color3.fromRGB(150,150,150))
     local atlasDd = makeDropdown(aAtlas, ATLAS_OPTIONS, UDim2.new(0,350,0,28), UDim2.new(0,104,0,1), function(v) currentAction.config = v end)
 
@@ -364,29 +372,25 @@ local function open(onRun)
     aAdj.Size = UDim2.new(1,0,0,64); aAdj.BackgroundTransparency = 1; aAdj.Visible = false
     acfFrames["adjuster_loop"] = aAdj
     lbl(aAdj, "Comp name",    UDim2.new(0,100,0,26), UDim2.new(0,0,0,2),  11, Color3.fromRGB(150,150,150))
-    local compBox = input(aAdj, UDim2.new(0,260,0,26), UDim2.new(0,104,0,2),  "e.g. 4r4b")
-    compBox:GetPropertyChangedSignal("Text"):Connect(function() currentAction.comp = compBox.Text end)
-    lbl(aAdj, "Atlas config", UDim2.new(0,100,0,26), UDim2.new(0,0,0,34), 11, Color3.fromRGB(150,150,150))
-    local adjAtlasBox = input(aAdj, UDim2.new(0,260,0,26), UDim2.new(0,104,0,34), "e.g. atlas/1.json")
-    adjAtlasBox:GetPropertyChangedSignal("Text"):Connect(function()
-        currentAction.atlasConfig = adjAtlasBox.Text ~= "" and adjAtlasBox.Text or nil
+    local compDd = makeDropdown(aAdj, COMP_OPTIONS, UDim2.new(0,260,0,26), UDim2.new(0,104,0,2), function(v)
+        currentAction.comp = v
     end)
-
+    lbl(aAdj, "Atlas config", UDim2.new(0,100,0,26), UDim2.new(0,0,0,34), 11, Color3.fromRGB(150,150,150))
+    local adjAtlasDd = makeDropdown(aAdj, ATLAS_OPTIONS, UDim2.new(0,260,0,26), UDim2.new(0,104,0,34), function(v)
+        currentAction.atlasConfig = v
+    end)
 
     -- rj_buyer fields
     local aRJ = Instance.new("Frame", actSec)
     aRJ.Size = UDim2.new(1,0,0,64); aRJ.BackgroundTransparency = 1; aRJ.Visible = false
     acfFrames["rj_buyer"] = aRJ
     lbl(aRJ, "Interval (min)", UDim2.new(0,100,0,26), UDim2.new(0,0,0,2),  11, Color3.fromRGB(150,150,150))
-    local intBox = input(aRJ, UDim2.new(0,120,0,26), UDim2.new(0,104,0,2),  "1–300 minutes")
+    local intBox = input(aRJ, UDim2.new(0,120,0,26), UDim2.new(0,104,0,2), "1–300 minutes")
     intBox:GetPropertyChangedSignal("Text"):Connect(function() currentAction.interval = tonumber(intBox.Text) end)
     lbl(aRJ, "Atlas config",   UDim2.new(0,100,0,26), UDim2.new(0,0,0,34), 11, Color3.fromRGB(150,150,150))
-    local rjAtlasBox = input(aRJ, UDim2.new(0,260,0,26), UDim2.new(0,104,0,34), "e.g. atlas/1.json")
-    rjAtlasBox:GetPropertyChangedSignal("Text"):Connect(function()
-        currentAction.atlasConfig = rjAtlasBox.Text ~= "" and rjAtlasBox.Text or nil
+    local rjAtlasDd = makeDropdown(aRJ, ATLAS_OPTIONS, UDim2.new(0,260,0,26), UDim2.new(0,104,0,34), function(v)
+        currentAction.atlasConfig = v
     end)
-
-
 
     -- Trigger section
     local trgSec   = section(stepScroll, "Trigger")
@@ -403,7 +407,7 @@ local function open(onRun)
     fieldRow(tHoney, "Amount", honeyBox)
     honeyBox:GetPropertyChangedSignal("Text"):Connect(function() currentTrigger.amount = tonumber(honeyBox.Text) end)
 
-    -- material (two rows — need a wrapper frame)
+    -- material
     local tMat = Instance.new("Frame", trgSec); trFrames["material"] = tMat
     tMat.Size = UDim2.new(1,0,0,64); tMat.BackgroundTransparency = 1; tMat.Visible = false
     local matNameBox = input(nil, UDim2.new(), UDim2.new(), "e.g. Blue Extract")
@@ -433,21 +437,18 @@ local function open(onRun)
 
     -- ── loadStepEditor ────────────────────────────────────────────────────────
     function loadStepEditor(step)
-        currentAction  = step and { type=step.action.type,  config=step.action.config,  comp=step.action.comp,  interval=step.action.interval }
-                                or { type="atlas_config", config="atlas/1.json" }
+        currentAction  = step and { type=step.action.type, config=step.action.config, comp=step.action.comp, interval=step.action.interval, atlasConfig=step.action.atlasConfig }
+                                or { type="atlas_config", config=ATLAS_OPTIONS[1] }
         currentTrigger = step and { type=step.trigger.type, amount=step.trigger.amount, name=step.trigger.name, minutes=step.trigger.minutes }
                                 or { type="time", minutes=60 }
 
         actTypeDd.setValue(currentAction.type)
         for t, f in pairs(acfFrames) do f.Visible = (t == currentAction.type) end
         atlasDd.setValue(currentAction.config or ATLAS_OPTIONS[1])
-        compBox.Text = currentAction.comp or ""
-        intBox.Text  = currentAction.interval and tostring(currentAction.interval) or ""
-
-        adjAtlasBox.Text = currentAction.atlasConfig or ""
-        rjAtlasBox.Text  = currentAction.atlasConfig or ""
-
-
+        compDd.setValue(currentAction.comp or COMP_OPTIONS[1])
+        adjAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])
+        intBox.Text = currentAction.interval and tostring(currentAction.interval) or ""
+        rjAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])
 
         trgTypeDd.setValue(currentTrigger.type)
         for t, f in pairs(trFrames) do f.Visible = (t == currentTrigger.type) end
@@ -461,7 +462,7 @@ local function open(onRun)
 
     confirmB.MouseButton1Click:Connect(function()
         local newStep = {
-            action  = { type=currentAction.type,  config=currentAction.config,  comp=currentAction.comp,  interval=currentAction.interval },
+            action  = { type=currentAction.type, config=currentAction.config, comp=currentAction.comp, interval=currentAction.interval, atlasConfig=currentAction.atlasConfig },
             trigger = { type=currentTrigger.type, amount=currentTrigger.amount, name=currentTrigger.name, minutes=currentTrigger.minutes },
         }
         if editingStepIdx then
