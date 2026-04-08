@@ -199,9 +199,20 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
                 dlog("[Runner] Trigger met — advancing")
                 break
             end
-            if trigger.type == "time" then
+            -- log current value each poll so we can see progress
+            if trigger.type == "honey" then
+                local cur = detection.getHoney()
+                dlog("[Runner] honey: " .. tostring(cur) .. " / " .. tostring(trigger.amount))
+            elseif trigger.type == "material" then
+                local cur = detection.getMaterial(trigger.name)
+                dlog("[Runner] material '" .. trigger.name .. "': " .. tostring(cur) .. " / " .. tostring(trigger.amount))
+            elseif trigger.type == "item" then
+                dlog("[Runner] item '" .. trigger.name .. "': " .. tostring(detection.hasItem(trigger.name)))
+            elseif trigger.type == "tool" then
+                dlog("[Runner] tool '" .. trigger.name .. "': " .. tostring(detection.hasTool(trigger.name)))
+            elseif trigger.type == "time" then
                 local remaining = math.ceil(trigger.minutes - (os.clock() - stepStartTime) / 60)
-                dlog("[Runner] Time trigger: ~" .. math.max(0, remaining) .. " min remaining")
+                dlog("[Runner] time: ~" .. math.max(0, remaining) .. " min remaining")
             end
         end
 

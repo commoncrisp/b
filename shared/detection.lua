@@ -78,7 +78,11 @@ end
 local function getMaterial(name)
     local key = MATERIAL_KEYS[name]
     if not key then return 0 end
-    return cacheGet({"Eggs", key}) or 0
+    -- try top-level, then under Eggs, then under Materials
+    return cacheGet({key})
+        or cacheGet({"Eggs", key})
+        or cacheGet({"Materials", key})
+        or 0
 end
 
 local function getHoney()
