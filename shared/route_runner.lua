@@ -68,14 +68,16 @@ local function applyAtlasConfig(configPath, dlog)
         return
     end
     dlog("[Runner] Reloading Atlas...")
-    local ok2, err2 = pcall(function()
-        loadstring(game:HttpGet(ATLAS_URL))()
+    task.spawn(function()
+        local ok2, err2 = pcall(function()
+            loadstring(game:HttpGet(ATLAS_URL))()
+        end)
+        if ok2 then
+            dlog("[Runner] Atlas reloaded")
+        else
+            dlog("[Runner] Atlas reload failed: " .. tostring(err2))
+        end
     end)
-    if ok2 then
-        dlog("[Runner] Atlas reloaded")
-    else
-        dlog("[Runner] Atlas reload failed: " .. tostring(err2))
-    end
 end
 
 -- ── Runner state (one route at a time) ───────────────────────────────────────
