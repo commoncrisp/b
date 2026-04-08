@@ -2,7 +2,28 @@ local Players     = game:GetService("Players")
 local lp          = Players.LocalPlayer
 local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer" }
-local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
+local TRIGGER_TYPES = "honey", "material", "item", "tool", "time" }
+
+local MATERIAL_OPTIONS = {
+    "Royal Jelly", "Glitter", "Oil", "Blue Extract", "Red Extract",
+    "Blueberry", "Strawberry", "Pineapple", "Coconut", "Tropical Drink",
+    "Sunflower Seed", "Stinger", "Enzymes", "Glue", "Gumdrops", "Treat",
+    "Moon Charm", "Soft Wax", "Hard Wax", "Caustic Wax", "Swirled Wax",
+    "Star Jelly", "Spirit Petal", "Purple Potion", "Turpentine", "Neonberry",
+    "Micro-Converter", "Gold Egg", "Diamond Egg", "Comforting Vial",
+    "Refreshing Vial", "Satisfying Vial", "Invigorating Vial", "Motivating Vial",
+}
+table.sort(MATERIAL_OPTIONS)
+
+local ITEM_OPTIONS = {
+    "Bubble Mask", "Diamond Mask", "Bitterberry Belt", "Bubble Belt",
+    "Diamond Belt", "Honey Belt", "Petal Belt", "Beekeeper's Boots",
+    "Bubble Boots", "Diamond Boots", "Honey Boots", "Petal Boots",
+    "Candle Boots", "Beekeeper's Guard", "Bubble Guard", "Diamond Guard",
+    "Honey Guard", "Petal Guard", "Bubble Glider", "Diamond Glider",
+    "Honey Glider", "Petal Glider",
+}
+table.sort(ITEM_OPTIONS)
 
 local ATLAS_OPTIONS = {}
 pcall(function()
@@ -410,18 +431,22 @@ local function open(onRun)
     -- material
     local tMat = Instance.new("Frame", trgSec); trFrames["material"] = tMat
     tMat.Size = UDim2.new(1,0,0,64); tMat.BackgroundTransparency = 1; tMat.Visible = false
-    local matNameBox = input(nil, UDim2.new(), UDim2.new(), "e.g. Blue Extract")
-    fieldRow(tMat, "Material", matNameBox)
-    matNameBox:GetPropertyChangedSignal("Text"):Connect(function() currentTrigger.name = matNameBox.Text end)
+    local matNameDd = makeDropdown(tMat, MATERIAL_OPTIONS, UDim2.new(0,260,0,26), UDim2.new(0,104,0,2), function(v)
+        currentTrigger.name = v
+    end)
+    lbl(tMat, "Material", UDim2.new(0,100,0,26), UDim2.new(0,0,0,2), 11, Color3.fromRGB(150,150,150))
     local matAmtBox = input(tMat, UDim2.new(0,120,0,26), UDim2.new(0,104,0,34), "e.g. 50")
     lbl(tMat, "Amount", UDim2.new(0,100,0,26), UDim2.new(0,0,0,34), 11, Color3.fromRGB(150,150,150))
     matAmtBox:GetPropertyChangedSignal("Text"):Connect(function() currentTrigger.amount = tonumber(matAmtBox.Text) end)
 
+
     -- item
     local tItem = row(trgSec); trFrames["item"] = tItem; tItem.Visible = false
-    local itemBox = input(nil, UDim2.new(), UDim2.new(), "e.g. Diamond Mask")
-    fieldRow(tItem, "Item name", itemBox)
-    itemBox:GetPropertyChangedSignal("Text"):Connect(function() currentTrigger.name = itemBox.Text end)
+    lbl(tItem, "Item name", UDim2.new(0,100,1,0), UDim2.new(0,0,0,0), 11, Color3.fromRGB(150,150,150))
+    local itemDd = makeDropdown(tItem, ITEM_OPTIONS, UDim2.new(0,260,0,26), UDim2.new(0,104,0,2), function(v)
+        currentTrigger.name = v
+    end)
+
 
     -- tool
     local tTool = row(trgSec); trFrames["tool"] = tTool; tTool.Visible = false
@@ -453,9 +478,9 @@ local function open(onRun)
         trgTypeDd.setValue(currentTrigger.type)
         for t, f in pairs(trFrames) do f.Visible = (t == currentTrigger.type) end
         honeyBox.Text   = currentTrigger.amount  and tostring(currentTrigger.amount)  or ""
-        matNameBox.Text = currentTrigger.name    or ""
+        matNameDd.setValue(currentTrigger.name or MATERIAL_OPTIONS[1])
         matAmtBox.Text  = currentTrigger.amount  and tostring(currentTrigger.amount)  or ""
-        itemBox.Text    = currentTrigger.name    or ""
+        itemDd.setValue(currentTrigger.name or ITEM_OPTIONS[1])
         toolBox.Text    = currentTrigger.name    or ""
         timeBox.Text    = currentTrigger.minutes and tostring(currentTrigger.minutes) or ""
     end
