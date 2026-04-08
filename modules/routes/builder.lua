@@ -4,26 +4,71 @@ local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer" }
 local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
 
+-- Materials (select by amount)
 local MATERIAL_OPTIONS = {
-    "Royal Jelly", "Glitter", "Oil", "Blue Extract", "Red Extract",
-    "Blueberry", "Strawberry", "Pineapple", "Coconut", "Tropical Drink",
-    "Sunflower Seed", "Stinger", "Enzymes", "Glue", "Gumdrop", "Treat",
-    "Moon Charm", "Soft Wax", "Hard Wax", "Caustic Wax", "Swirled Wax",
-    "Star Jelly", "Spirit Petal", "Purple Potion", "Turpentine", "Neonberry",
-    "Micro-Converter", "Gold Egg", "Diamond Egg", "Comforting Vial",
-    "Refreshing Vial", "Satisfying Vial", "Invigorating Vial", "Motivating Vial",
+    -- Misc
+    "Snowflake", "Ticket", "Gumdrop", "Coconut", "Stinger", "Honeysuckle",
+    "Whirligig", "Jelly Beans", "Red Extract", "Blue Extract", "Glitter",
+    "Glue", "Oil", "Enzymes", "Tropical Drink", "Purple Potion",
+    "Super Smoothie", "Marshmallow Bee", "Magic Bean", "Festive Bean",
+    "Cloud Vial", "Box-O-Frogs", "Translator", "Present", "Spirit Petal",
+    "Bloom Shaker",
+    -- Dice
+    "Field Dice", "Smooth Dice", "Loaded Dice",
+    -- Challenge Passes
+    "Ant Pass", "Robo Pass",
+    -- Bee Treats
+    "Treat", "Atomic Treat", "Star Treat",
+    -- Nectar Vials
+    "Comforting Vial", "Invigorating Vial", "Motivating Vial",
+    "Refreshing Vial", "Satisfying Vial", "Nectar Shower Vial",
+    -- Balloons
+    "Pink Balloon", "Red Balloon", "White Balloon", "Black Balloon",
+    -- Wax
+    "Soft Wax", "Hard Wax", "Caustic Wax", "Debug Wax", "Swirled Wax", "Turpentine",
+    -- Eggs / Jelly
+    "Basic Egg", "Silver Egg", "Gifted Silver Egg", "Gold Egg", "Gifted Gold Egg",
+    "Diamond Egg", "Gifted Diamond Egg", "Mythic Egg", "Gifted Mythic Egg",
+    "Star Egg", "Royal Jelly", "Star Jelly",
 }
-table.sort(MATERIAL_OPTIONS)
 
+-- Items (owned or not — masks, guards, belts, boots, gliders, planters)
 local ITEM_OPTIONS = {
-    "Bubble Mask", "Diamond Mask", "Bitterberry Belt", "Bubble Belt",
-    "Diamond Belt", "Honey Belt", "Petal Belt", "Beekeeper's Boots",
-    "Bubble Boots", "Diamond Boots", "Honey Boots", "Petal Boots",
-    "Candle Boots", "Beekeeper's Guard", "Bubble Guard", "Diamond Guard",
-    "Honey Guard", "Petal Guard", "Bubble Glider", "Diamond Glider",
-    "Honey Glider", "Petal Glider",
+    -- Masks / Hats
+    "Helmet", "Propeller Hat", "Beekeeper's Mask", "Honey Mask", "Fire Mask",
+    "Bubble Mask", "Gummy Mask", "Demon Mask", "Diamond Mask",
+    -- Guards
+    "Brave Guard", "Hasty Guard", "Bomber Guard", "Looker Guard",
+    "Blue Guard", "Elite Blue Guard", "Bucko Guard",
+    "Red Guard", "Elite Red Guard", "Riley Guard",
+    "Cobalt Guard", "Crimson Guard",
+    -- Belts
+    "Belt Pocket", "Belt Bag", "Mondo Belt Bag", "Honeycomb Belt",
+    "Petal Belt", "Coconut Belt",
+    -- Boots
+    "Basic Boots", "Hiking Boots", "Beekeeper's Boots",
+    "Coconut Clogs", "Gummy Boots",
+    -- Gliders
+    "Parachute", "Glider",
+    -- Planters
+    "Paper Planter", "Ticket Planter", "Festive Planter", "Plastic Planter",
+    "Candy Planter", "Tacky Planter", "Pesticide Planter",
+    "Blue Clay Planter", "Red Clay Planter", "Heat-Treated Planter",
+    "Hydroponic Planter", "Petal Planter", "The Planter Of Plenty",
 }
-table.sort(ITEM_OPTIONS)
+
+-- Tools (trigger fires when player has this tool OR better in the tier list)
+local TOOL_OPTIONS = {
+    -- Tools
+    "Scooper", "Rake", "Clippers", "Magnet", "Vacuum", "Super-Scooper",
+    "Pulsar", "Electro-Magnet", "Scissors", "Honey Dipper", "Bubble Wand",
+    "Scythe", "Sticker-Seeker", "Golden Rake", "Spark Staff",
+    "Porcelain Dipper", "Petal Wand", "Tide Popper", "Dark Scythe", "Gummyballer",
+    -- Bags
+    "Pouch", "Jar", "Backpack", "Canister", "Mega-Jug", "Compressor",
+    "Elite Barrel", "Port-O-Hive", "Blue Port-O-Hive", "Red Port-O-Hive",
+    "Porcelain Port-O-Hive", "Coconut Canister",
+}
 
 local ATLAS_OPTIONS = {}
 pcall(function()
@@ -450,9 +495,10 @@ local function open(onRun)
 
     -- tool
     local tTool = row(trgSec); trFrames["tool"] = tTool; tTool.Visible = false
-    local toolBox = input(nil, UDim2.new(), UDim2.new(), "e.g. Porcelain Dipper")
-    fieldRow(tTool, "Tool name", toolBox)
-    toolBox:GetPropertyChangedSignal("Text"):Connect(function() currentTrigger.name = toolBox.Text end)
+    lbl(tTool, "Tool/Bag", UDim2.new(0,100,1,0), UDim2.new(0,0,0,0), 11, Color3.fromRGB(150,150,150))
+    local toolDd = makeDropdown(tTool, TOOL_OPTIONS, UDim2.new(0,260,0,26), UDim2.new(0,104,0,2), function(v)
+        currentTrigger.name = v
+    end)
 
     -- time
     local tTime = row(trgSec); trFrames["time"] = tTime; tTime.Visible = false
@@ -481,7 +527,7 @@ local function open(onRun)
         matNameDd.setValue(currentTrigger.name or MATERIAL_OPTIONS[1])
         matAmtBox.Text  = currentTrigger.amount  and tostring(currentTrigger.amount)  or ""
         itemDd.setValue(currentTrigger.name or ITEM_OPTIONS[1])
-        toolBox.Text    = currentTrigger.name    or ""
+        toolDd.setValue(currentTrigger.name or TOOL_OPTIONS[1])
         timeBox.Text    = currentTrigger.minutes and tostring(currentTrigger.minutes) or ""
     end
 
