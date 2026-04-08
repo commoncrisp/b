@@ -2,12 +2,12 @@ local Players     = game:GetService("Players")
 local lp          = Players.LocalPlayer
 local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer" }
-local TRIGGER_TYPES = "honey", "material", "item", "tool", "time" }
+local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
 
 local MATERIAL_OPTIONS = {
     "Royal Jelly", "Glitter", "Oil", "Blue Extract", "Red Extract",
     "Blueberry", "Strawberry", "Pineapple", "Coconut", "Tropical Drink",
-    "Sunflower Seed", "Stinger", "Enzymes", "Glue", "Gumdrops", "Treat",
+    "Sunflower Seed", "Stinger", "Enzymes", "Glue", "Gumdrop", "Treat",
     "Moon Charm", "Soft Wax", "Hard Wax", "Caustic Wax", "Swirled Wax",
     "Star Jelly", "Spirit Petal", "Purple Potion", "Turpentine", "Neonberry",
     "Micro-Converter", "Gold Egg", "Diamond Egg", "Comforting Vial",
