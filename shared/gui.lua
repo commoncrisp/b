@@ -658,6 +658,12 @@ resetProgressBtn.MouseButton1Click:Connect(function()
     routeStatusLabel.Text = "Progress cleared (" .. count .. " files deleted)"
 end)
 
+local dumpCacheCallback = nil
+local dumpCacheBtn = makeBtn(routesTab, "🔍 DUMP CACHE (debug)", 6)
+dumpCacheBtn.MouseButton1Click:Connect(function()
+    if dumpCacheCallback then dumpCacheCallback() end
+end)
+
 -- ════════════════════════════════════════════════════════════
 --  TAB 6: COMMANDO ALT
 -- ════════════════════════════════════════════════════════════
@@ -842,6 +848,7 @@ return {
     -- Routes
     onOpenBuilder  = function(cb) openBuilderCallback = cb end,
     onStopRoute    = function(cb) stopRouteCallback = cb end,
+    onDumpCache    = function(cb) dumpCacheCallback = cb end,
     setRouteStatus = function(text) routeStatusLabel.Text = text end,
     onCommando     = function(cb) commandoCallback = cb end,
     onCommandoStop = function(cb) commandoStopCallback = cb end,

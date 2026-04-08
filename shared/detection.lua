@@ -188,11 +188,43 @@ local function selfTest(dlog)
     end
 end
 
+-- ── Cache explorer ────────────────────────────────────────────────────────────
+local function dumpCache(dlog)
+    if not cache then dlog("[Cache] cache is nil!"); return end
+    dlog("[Cache] Dumping top-level keys...")
+    local ok, data = pcall(function() return cache:Get({}) end)
+    if not ok or type(data) ~= "table" then
+        dlog("[Cache] Get({}) failed or not a table: " .. tostring(data))
+        -- try some known paths manually
+        local paths = {
+            {"Honey"}, {"Inv"}, {"Stats"}, {"Items"}, {"Materials"},
+            {"Eggs"}, {"Backpack"}, {"Accessories"},
+        }
+        for _, p in ipairs(paths) do
+            local v = cacheGet(p)
+            dlog("[Cache] " .. table.concat(p,"/") .. " = " .. tostring(v):sub(1,80))
+        end
+        return
+    end
+    for k, v in pairs(data) do
+        local t = type(v)
+        if t == "table" then
+            dlog("[Cache] [" .. tostring(k) .. "] = {table}")
+            for k2, v2 in pairs(v) do
+                dlog("[Cache]   [" .. tostring(k2) .. "] = " .. tostring(v2):sub(1,60))
+            end
+        else
+            dlog("[Cache] [" .. tostring(k) .. "] = " .. tostring(v):sub(1,80))
+        end
+    end
+end
+
 return {
     hasTool       = hasTool,
     hasItem       = hasItem,
     getMaterial   = getMaterial,
     getHoney      = getHoney,
     selfTest      = selfTest,
+    dumpCache     = dumpCache,
     MATERIAL_KEYS = MATERIAL_KEYS,
 }

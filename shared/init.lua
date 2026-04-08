@@ -136,6 +136,12 @@ local function init()
         gui.setRouteStatus("⏹ Stopped")
         dlog("Route stopped by user")
     end)
+
+    gui.onDumpCache(function()
+        dlog("[Cache] === DUMP START ===")
+        detection.dumpCache(dlog)
+        dlog("[Cache] === DUMP END ===")
+    end)
         -- ── Alt Command ────────────────────────────────────────────────
     local commandoAlt = loadstring(game:HttpGet(rawBase .. "modules/commando_alt/init.lua"))()
 
