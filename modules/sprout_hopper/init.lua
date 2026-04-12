@@ -109,12 +109,12 @@ local function hop(dlog)
         dlog("All hops failed — fallback teleport")
         markVisited(game.JobId)
         pcall(function() TeleportService:Teleport(game.PlaceId) end)
-        task.wait(15)
+        task.wait(5)
     end
 end
 
 -- ── Atlas launcher ────────────────────────────────────────────────────────────
-local function launchAtlas(dlog)
+local function launchAtlas(map)
     dlog("Launching Atlas...")
     task.spawn(function()
         local ok, err = pcall(function()
@@ -137,7 +137,7 @@ local function run(dlog)
         local ok, err = pcall(function()
             if hasSprout() then
                 dlog("Sprout found! Starting Atlas...")
-                launchAtlas(dlog)
+                launchAtlas(map)
 
                 while not _stop do
                     task.wait(POLL_INTERVAL)
@@ -159,7 +159,7 @@ local function run(dlog)
                 end
             else
                 dlog("No sprout here — hopping...")
-                hop(dlog)
+                hop
             end
         end)
 
