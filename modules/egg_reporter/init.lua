@@ -110,7 +110,7 @@ local function snapshot()
     return counts
 end
 
--- ── Session persistence ───────────────────────────────────────────────────────
+-- modules/egg_reporter/init.lua
 local function loadSession()
     local ok, data = pcall(function()
         return HttpService:JSONDecode(readfile(SESSION_FILE))
@@ -181,9 +181,9 @@ local function run(dlog)
     end
 
     dlog("Reporter running — reporting every " .. (REPORT_INTERVAL / 60) .. " mins.")
+    dlog("Next report in: " .. math.max(0, math.floor(timeLeft)) .. "s")
 
     while not _stop do
-        dlog("Next report in: " .. math.max(0, math.floor(timeLeft)) .. "s")
         task.wait(5)
         if _stop then break end
 
