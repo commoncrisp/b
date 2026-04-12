@@ -9,6 +9,8 @@ local POLL_INTERVAL    = 5
 local SPROUT_GONE_WAIT = 20
 local HOP_WAIT         = 4
 local VISITED_FILE     = "sprout_visited.json"
+local FAIL_LIMIT       = 3
+local FAIL_WAIT        = 120 -- 2 minutes
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
 local function loadVisited()
@@ -72,7 +74,18 @@ local function getServers()
 end
 
 -- ── Hop ───────────────────────────────────────────────────────────────────────
+local consecutiveFails = 0
+
 local function hop(dlog)
+    -- if failed too many times in a row, wait 2 mins before trying again
+    if consecutiveFails >= FAIL_LIMIT then
+        dlog("Failed " .. FAIL_LIMIT .. " times in a row — waiting " .. (FAIL_WAIT/60) .. " mins before retrying...")
+        task.wait(FAIL_WAIT)
+        consecutiveFails = 0
+        saveVisited({}) -- clear visited list too so we have fresh servers to try
+        dlog("Resuming hops...")
+    end
+
     local servers = getServers()
 
     if #servers == 0 then
@@ -101,10 +114,10 @@ local function hop(dlog)
             dlog("Teleport failed: " .. tostring(err))
             task.wait(2)
         else
-            -- wait and check if we actually moved
             task.wait(15)
             if game.JobId ~= originalJobId then
                 hopped = true
+                consecutiveFails = 0
                 break
             else
                 dlog("Teleport silently failed — trying next server...")
@@ -113,7 +126,8 @@ local function hop(dlog)
     end
 
     if not hopped then
-        dlog("All hops failed — fallback teleport")
+        consecutiveFails = consecutiveFails + 1
+        dlog("Hop failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ") — fallback teleport")
         markVisited(game.JobId)
         pcall(function() TeleportService:Teleport(game.PlaceId) end)
         task.wait(15)
