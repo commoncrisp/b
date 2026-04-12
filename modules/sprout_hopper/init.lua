@@ -9,8 +9,9 @@ local POLL_INTERVAL    = 5
 local SPROUT_GONE_WAIT = 20
 local HOP_WAIT         = 4
 local VISITED_FILE     = "sprout_visited.json"
+local FAILS_FILE       = "sprout_fails.json"
 local FAIL_LIMIT       = 3
-local FAIL_WAIT        = 120 -- 2 minutes
+local FAIL_WAIT        = 10
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
 local function loadVisited()
@@ -38,6 +39,24 @@ local function wasVisited(jobId)
     end
     return false
 end
+
+-- ── Fail counter ──────────────────────────────────────────────────────────────
+local function loadFails()
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(readfile(FAILS_FILE))
+    end)
+    return (ok and type(data) == "table") and data.count or 0
+end
+
+local function saveFails(count)
+    pcall(writefile, FAILS_FILE, HttpService:JSONEncode({ count = count }))
+end
+
+local function resetFails()
+    saveFails(0)
+end
+
+local consecutiveFails = loadFails()
 
 -- ── Sprout detection ──────────────────────────────────────────────────────────
 local function findSprout()
@@ -74,18 +93,7 @@ local function getServers()
 end
 
 -- ── Hop ───────────────────────────────────────────────────────────────────────
-local consecutiveFails = 0
-
 local function hop(dlog)
-    -- if failed too many times in a row, wait 2 mins before trying again
-    if consecutiveFails >= FAIL_LIMIT then
-        dlog("Failed " .. FAIL_LIMIT .. " times in a row — waiting " .. (FAIL_WAIT/60) .. " mins before retrying...")
-        task.wait(FAIL_WAIT)
-        consecutiveFails = 0
-        saveVisited({}) -- clear visited list too so we have fresh servers to try
-        dlog("Resuming hops...")
-    end
-
     local servers = getServers()
 
     if #servers == 0 then
@@ -118,6 +126,7 @@ local function hop(dlog)
             if game.JobId ~= originalJobId then
                 hopped = true
                 consecutiveFails = 0
+                resetFails()
                 break
             else
                 dlog("Teleport silently failed — trying next server...")
@@ -127,10 +136,21 @@ local function hop(dlog)
 
     if not hopped then
         consecutiveFails = consecutiveFails + 1
-        dlog("Hop failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ") — fallback teleport")
-        markVisited(game.JobId)
-        pcall(function() TeleportService:Teleport(game.PlaceId) end)
-        task.wait(15)
+        saveFails(consecutiveFails)
+        dlog("Hop failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ")")
+
+        if consecutiveFails >= FAIL_LIMIT then
+            dlog("Too many fails — leaving game, waiting " .. FAIL_WAIT .. "s, then rejoining...")
+            consecutiveFails = 0
+            resetFails()
+            saveVisited({})
+            lp:Kick("SproutHopper: rejoining...")
+            task.wait(FAIL_WAIT)
+            TeleportService:Teleport(game.PlaceId)
+        else
+            pcall(function() TeleportService:Teleport(game.PlaceId) end)
+            task.wait(15)
+        end
     end
 end
 
