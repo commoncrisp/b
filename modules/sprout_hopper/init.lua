@@ -90,18 +90,25 @@ local function hop(dlog)
     dlog("Found " .. #servers .. " unvisited servers — hopping...")
     markVisited(game.JobId)
 
+    local originalJobId = game.JobId
     local hopped = false
+
     for _, server in ipairs(servers) do
         local ok, err = pcall(function()
             TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
         end)
-        if ok then
-            hopped = true
-            task.wait(15)
-            break
-        else
+        if not ok then
             dlog("Teleport failed: " .. tostring(err))
             task.wait(2)
+        else
+            -- wait and check if we actually moved
+            task.wait(15)
+            if game.JobId ~= originalJobId then
+                hopped = true
+                break
+            else
+                dlog("Teleport silently failed — trying next server...")
+            end
         end
     end
 
