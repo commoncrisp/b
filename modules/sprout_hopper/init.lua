@@ -1,5 +1,5 @@
 -- modules/sprout_hopper/init.lua
--- Hops servers until finding one with an active sprout.
+-- Hops servers until
 -- Runs Atlas while the sprout is alive.
 -- Once the sprout disappears, waits 1 minute then hops again.
 
@@ -17,25 +17,10 @@ local HOP_WAIT         = 8    -- seconds between each server hop attempt
 -- Sprouts appear as a Model/Part in workspace named "Sprout" or containing
 -- "Sprout" in their name. BSS uses a model called "Sprout" under workspace.
 local function findSprout()
-    -- Direct child called "Sprout"
-    local direct = workspace:FindFirstChild("Sprout")
-    if direct then return direct end
-
-    -- Sometimes nested under a folder (e.g. "Props", "Objects", "MapObjects")
-    for _, folder in pairs(workspace:GetChildren()) do
-        if folder:IsA("Model") or folder:IsA("Folder") then
-            local s = folder:FindFirstChild("Sprout")
-            if s then return s end
-        end
+    local folder = workspace:FindFirstChild("Sprouts")
+    if folder then
+        return folder:FindFirstChild("Sprout")
     end
-
-    -- Broad search as fallback
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj.Name == "Sprout" and (obj:IsA("Model") or obj:IsA("BasePart")) then
-            return obj
-        end
-    end
-
     return nil
 end
 
