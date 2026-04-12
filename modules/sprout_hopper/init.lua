@@ -22,10 +22,9 @@ local function saveVisited(visited)
     pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
 end
 
-local function targetVisited(jobId)
+local function markVisited(jobId)
     local visited = loadVisited()
     table.insert(visited, jobId)
-    -- only keep last 20 to avoid list growing forever
     while #visited > 20 do table.remove(visited, 1) end
     saveVisited(visited)
 end
@@ -78,19 +77,18 @@ local function hop(dlog)
 
     if #servers == 0 then
         dlog("No unvisited servers found — clearing history and retrying in " .. HOP_WAIT .. "s...")
-        saveVisited({}) -- reset so we don't get stuck forever
+        saveVisited({})
         task.wait(HOP_WAIT)
         return
     end
 
-    -- shuffle
     for i = #servers, 2, -1 do
         local j = math.random(i)
         servers[i], servers[j] = servers[j], servers[i]
     end
 
     dlog("Found " .. #servers .. " unvisited servers — hopping...")
-    markVisited(game.JobId) -- mark current server before leaving
+    markVisited(game.JobId)
 
     local hopped = false
     for _, server in ipairs(servers) do
@@ -134,38 +132,42 @@ local function run(dlog)
     _stop = false
 
     dlog("=== Sprout Hopper started ===")
-    
+
     while not _stop do
-        if hasSprout() then
-            dlog("Sprout found! Starting Atlas...")
-            launchAtlas(dlog)
+        local ok, err = pcall(function()
+            if hasSprout() then
+                dlog("Sprout found! Starting Atlas...")
+                launchAtlas(dlog)
 
-            while not _stop do
-                task.wait(POLL_INTERVAL)
-                if not hasSprout() then
-                    dlog("Sprout is gone.")
-                    break
+                while not _stop do
+                    task.wait(POLL_INTERVAL)
+                    if not hasSprout() then
+                        dlog("Sprout is gone.")
+                        break
+                    end
+                    dlog("Sprout still active...")
                 end
-                dlog("Sprout still active...")
+
+                if _stop then return end
+
+                dlog("Waiting " .. SPROUT_GONE_WAIT .. "s before hopping...")
+                local waited = 0
+                while waited < SPROUT_GONE_WAIT and not _stop do
+                    task.wait(5)
+                    waited = waited + 5
+                    dlog("Hop in " .. (SPROUT_GONE_WAIT - waited) .. "s...")
+                end
+            else
+                dlog("No sprout here — hopping...")
+                hop(dlog)
             end
+        end)
 
-            if _stop then break end
-
-            dlog("Waiting " .. SPROUT_GONE_WAIT .. "s before hopping...")
-            local waited = 0
-            while waited < SPROUT_GONE_WAIT and not _stop do
-                task.wait(5)
-                waited = waited + 5
-                dlog("Hop in " .. (SPROUT_GONE_WAIT - waited) .. "s...")
-            end
-
-            if _stop then break end
-        else
-            dlog("No sprout here — hopping...")
-            hop(dlog)
+        if not ok then
+            dlog("ERROR (recovering): " .. tostring(err))
+            task.wait(5)
         end
     end
-
 
     dlog("=== Sprout Hopper stopped ===")
 end
