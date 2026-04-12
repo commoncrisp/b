@@ -134,7 +134,7 @@ local function run(dlog)
     _stop = false
 
     dlog("=== Sprout Hopper started ===")
-
+    
     while not _stop do
         if hasSprout() then
             dlog("Sprout found! Starting Atlas...")
@@ -165,6 +165,7 @@ local function run(dlog)
             hop(dlog)
         end
     end
+
 
     dlog("=== Sprout Hopper stopped ===")
 end
