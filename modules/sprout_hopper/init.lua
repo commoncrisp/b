@@ -7,35 +7,6 @@ local lp              = Players.LocalPlayer
 local ATLAS_URL        = "https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"
 local POLL_INTERVAL    = 5
 local SPROUT_GONE_WAIT = 20
-local HOP_WAIT         = 4
-local VISITED_FILE     = "sprout_visited.json"
-
--- ── Visited server tracking ───────────────────────────────────────────────────
-local function loadVisited()
-    local ok, data = pcall(function()
-        return HttpService:JSONDecode(readfile(VISITED_FILE))
-    end)
-    return (ok and type(data) == "table") and data or {}
-end
-
-local function saveVisited(visited)
-    pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
-end
-
-local function markVisited(jobId)
-    local visited = loadVisited()
-    table.insert(visited, jobId)
-    while #visited > 20 do table.remove(visited, 1) end
-    saveVisited(visited)
-end
-
-local function wasVisited(jobId)
-    local visited = loadVisited()
-    for _, id in ipairs(visited) do
-        if id == jobId then return true end
-    end
-    return false
-end
 
 -- ── Sprout detection ──────────────────────────────────────────────────────────
 local function findSprout()
@@ -48,73 +19,20 @@ local function hasSprout()
     return findSprout() ~= nil
 end
 
--- ── Server list ───────────────────────────────────────────────────────────────
-local function getServers()
-    local url = "https://games.roblox.com/v1/games/"
-        .. game.PlaceId
-        .. "/servers/Public?sortOrder=Asc&limit=100"
-
-    local ok, result = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet(url))
-    end)
-
-    if not ok or not result or not result.data then return {} end
-
-    local valid = {}
-    for _, server in pairs(result.data) do
-        if server.id ~= game.JobId
-        and not wasVisited(server.id)
-        and server.playing < server.maxPlayers then
-            table.insert(valid, server)
-        end
-    end
-    return valid
-end
-
 -- ── Hop ───────────────────────────────────────────────────────────────────────
 local function hop(dlog)
-    local servers = getServers()
-
-    if #servers == 0 then
-        dlog("No unvisited servers found — clearing history and retrying in " .. HOP_WAIT .. "s...")
-        saveVisited({})
-        task.wait(HOP_WAIT)
-        return
+    dlog("Hopping to random server...")
+    local ok, err = pcall(function()
+        TeleportService:Teleport(game.PlaceId)
+    end)
+    if not ok then
+        dlog("Teleport error: " .. tostring(err))
     end
-
-    for i = #servers, 2, -1 do
-        local j = math.random(i)
-        servers[i], servers[j] = servers[j], servers[i]
-    end
-
-    dlog("Found " .. #servers .. " unvisited servers — hopping...")
-    markVisited(game.JobId)
-
-    local hopped = false
-    for _, server in ipairs(servers) do
-        local ok, err = pcall(function()
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, lp)
-        end)
-        if ok then
-            hopped = true
-            task.wait(15)
-            break
-        else
-            dlog("Teleport failed: " .. tostring(err))
-            task.wait(2)
-        end
-    end
-
-    if not hopped then
-        dlog("All hops failed — fallback teleport")
-        markVisited(game.JobId)
-        pcall(function() TeleportService:Teleport(game.PlaceId) end)
-        task.wait(5)
-    end
+    task.wait(15)
 end
 
 -- ── Atlas launcher ────────────────────────────────────────────────────────────
-local function launchAtlas(map)
+local function launchAtlas(dlog)
     dlog("Launching Atlas...")
     task.spawn(function()
         local ok, err = pcall(function()
@@ -137,7 +55,7 @@ local function run(dlog)
         local ok, err = pcall(function()
             if hasSprout() then
                 dlog("Sprout found! Starting Atlas...")
-                launchAtlas(map)
+                launchAtlas(dlog)
 
                 while not _stop do
                     task.wait(POLL_INTERVAL)
@@ -159,7 +77,7 @@ local function run(dlog)
                 end
             else
                 dlog("No sprout here — hopping...")
-                hop
+                hop(dlog)
             end
         end)
 
