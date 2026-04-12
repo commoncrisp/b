@@ -13,7 +13,7 @@ local MATERIAL_KEYS = {
     -- Misc
     ["Snowflake"]          = "Snowflake",
     ["Ticket"]             = "Ticket",
-    ["Gumdrop"]            = "Gumdrops",
+    ["Gumdrop"]            = "Gumdrop",
     ["Coconut"]            = "Coconut",
     ["Stinger"]            = "Stinger",
     ["Honeysuckle"]        = "Honeysuckle",
@@ -187,6 +187,9 @@ local function run(dlog)
         if _stop then break end
 
         local currentTime = os.time()
+        local timeLeft = REPORT_INTERVAL - (currentTime - lastReport)
+        dlog("Next report in: " .. math.max(0, math.floor(timeLeft)) .. "s")
+
         if currentTime - lastReport >= REPORT_INTERVAL then
             local current     = snapshot()
             local lines       = {}
