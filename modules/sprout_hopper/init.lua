@@ -6,7 +6,7 @@ local lp              = Players.LocalPlayer
 
 local ATLAS_URL        = "https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"
 local POLL_INTERVAL    = 5
-local SPROUT_GONE_WAIT = 20
+local SPROUT_GONE_WAIT = 30
 
 -- ── Sprout detection ──────────────────────────────────────────────────────────
 local function findSprout()
@@ -20,7 +20,7 @@ local function hasSprout()
 end
 
 -- ── Hop ───────────────────────────────────────────────────────────────────────
-local function hop(dlog)
+local function hop
     dlog("Hopping to random server...")
     local ok, err = pcall(function()
         TeleportService:Teleport(game.PlaceId)
@@ -32,7 +32,7 @@ local function hop(dlog)
 end
 
 -- ── Atlas launcher ────────────────────────────────────────────────────────────
-local function launchAtlas(dlog)
+local function launchAtlas(map)
     dlog("Launching Atlas...")
     task.spawn(function()
         local ok, err = pcall(function()
@@ -55,7 +55,7 @@ local function run(dlog)
         local ok, err = pcall(function()
             if hasSprout() then
                 dlog("Sprout found! Starting Atlas...")
-                launchAtlas(dlog)
+                launchAtlas(map)
 
                 while not _stop do
                     task.wait(POLL_INTERVAL)
