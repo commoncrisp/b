@@ -183,12 +183,13 @@ local function run(dlog)
     dlog("Reporter running — reporting every " .. (REPORT_INTERVAL / 60) .. " mins.")
 
     while not _stop do
+        dlog("Next report in: " .. math.max(0, math.floor(timeLeft)) .. "s")
         task.wait(5)
         if _stop then break end
 
         local currentTime = os.time()
         local timeLeft = REPORT_INTERVAL - (currentTime - lastReport)
-        dlog("Next report in: " .. math.max(0, math.floor(timeLeft)) .. "s")
+        
 
         if currentTime - lastReport >= REPORT_INTERVAL then
             local current     = snapshot()
