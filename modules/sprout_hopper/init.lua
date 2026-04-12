@@ -126,6 +126,8 @@ local function hop(dlog)
     local hopped = false
 
     for _, server in ipairs(servers) do
+        if consecutiveFails >= FAIL_LIMIT then break end
+
         local ok, err = pcall(function()
             TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
         end)
@@ -140,16 +142,17 @@ local function hop(dlog)
                 resetFails()
                 break
             else
-                dlog("Teleport silently failed — trying next server...")
+                consecutiveFails = consecutiveFails + 1
+                saveFails(consecutiveFails)
+                dlog("Teleport silently failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ")")
+                if consecutiveFails >= FAIL_LIMIT then
+                    break
+                end
             end
         end
     end
 
     if not hopped then
-        consecutiveFails = consecutiveFails + 1
-        saveFails(consecutiveFails)
-        dlog("Hop failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ")")
-
         if consecutiveFails >= FAIL_LIMIT then
             dlog("Teleports blocked — launching Atlas for " .. (FAIL_WAIT/60) .. " mins while waiting...")
             consecutiveFails = 0
@@ -164,6 +167,7 @@ local function hop(dlog)
             end
             dlog("Resuming hops now...")
         else
+            dlog("All servers tried — fallback teleport")
             pcall(function() TeleportService:Teleport(game.PlaceId) end)
             task.wait(15)
         end
