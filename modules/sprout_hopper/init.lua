@@ -6,8 +6,8 @@ local lp              = Players.LocalPlayer
 
 local ATLAS_URL        = "https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"
 local POLL_INTERVAL    = 5
-local SPROUT_GONE_WAIT = 60
-local HOP_WAIT         = 8
+local SPROUT_GONE_WAIT = 20
+local HOP_WAIT         = 5
 local VISITED_FILE     = "sprout_visited.json"
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
@@ -22,7 +22,7 @@ local function saveVisited(visited)
     pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
 end
 
-local function markVisited(jobId)
+local function targetVisited(jobId)
     local visited = loadVisited()
     table.insert(visited, jobId)
     -- only keep last 20 to avoid list growing forever
