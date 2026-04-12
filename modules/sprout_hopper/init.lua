@@ -7,7 +7,7 @@ local lp              = Players.LocalPlayer
 local ATLAS_URL        = "https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"
 local POLL_INTERVAL    = 5
 local SPROUT_GONE_WAIT = 20
-local HOP_WAIT         = 5
+local HOP_WAIT         = 8
 local VISITED_FILE     = "sprout_visited.json"
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
