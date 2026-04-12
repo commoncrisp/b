@@ -1,23 +1,47 @@
 -- modules/sprout_hopper/init.lua
--- Hops servers until finding one with an active sprout.
--- Runs Atlas while the sprout is alive.
--- Once the sprout disappears, waits 1 minute then hops again.
-
 local TeleportService = game:GetService("TeleportService")
+local HttpService     = game:GetService("HttpService")
 local Players         = game:GetService("Players")
 local lp              = Players.LocalPlayer
 
 local ATLAS_URL        = "https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"
-local POLL_INTERVAL    = 5   -- seconds between sprout checks while atlas is running
-local SPROUT_GONE_WAIT = 30  -- seconds to wait after sprout disappears before hopping
+local POLL_INTERVAL    = 5
+local SPROUT_GONE_WAIT = 60
+local HOP_WAIT         = 8
+local VISITED_FILE     = "sprout_visited.json"
 
--- ── Sprout detection ─────────────────────────────────────────────────────────
--- Sprout lives at Workspace.Sprouts.Sprout
+-- ── Visited server tracking ───────────────────────────────────────────────────
+local function loadVisited()
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(readfile(VISITED_FILE))
+    end)
+    return (ok and type(data) == "table") and data or {}
+end
+
+local function saveVisited(visited)
+    pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
+end
+
+local function markVisited(jobId)
+    local visited = loadVisited()
+    table.insert(visited, jobId)
+    -- only keep last 20 to avoid list growing forever
+    while #visited > 20 do table.remove(visited, 1) end
+    saveVisited(visited)
+end
+
+local function wasVisited(jobId)
+    local visited = loadVisited()
+    for _, id in ipairs(visited) do
+        if id == jobId then return true end
+    end
+    return false
+end
+
+-- ── Sprout detection ──────────────────────────────────────────────────────────
 local function findSprout()
     local folder = workspace:FindFirstChild("Sprouts")
-    if folder then
-        return folder:FindFirstChild("Sprout")
-    end
+    if folder then return folder:FindFirstChild("Sprout") end
     return nil
 end
 
@@ -25,29 +49,84 @@ local function hasSprout()
     return findSprout() ~= nil
 end
 
+-- ── Server list ───────────────────────────────────────────────────────────────
+local function getServers()
+    local url = "https://games.roblox.com/v1/games/"
+        .. game.PlaceId
+        .. "/servers/Public?sortOrder=Asc&limit=100"
+
+    local ok, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(url))
+    end)
+
+    if not ok or not result or not result.data then return {} end
+
+    local valid = {}
+    for _, server in pairs(result.data) do
+        if server.id ~= game.JobId
+        and not wasVisited(server.id)
+        and server.playing < server.maxPlayers then
+            table.insert(valid, server)
+        end
+    end
+    return valid
+end
+
+-- ── Hop ───────────────────────────────────────────────────────────────────────
+local function hop(dlog)
+    local servers = getServers()
+
+    if #servers == 0 then
+        dlog("No unvisited servers found — clearing history and retrying in " .. HOP_WAIT .. "s...")
+        saveVisited({}) -- reset so we don't get stuck forever
+        task.wait(HOP_WAIT)
+        return
+    end
+
+    -- shuffle
+    for i = #servers, 2, -1 do
+        local j = math.random(i)
+        servers[i], servers[j] = servers[j], servers[i]
+    end
+
+    dlog("Found " .. #servers .. " unvisited servers — hopping...")
+    markVisited(game.JobId) -- mark current server before leaving
+
+    local hopped = false
+    for _, server in ipairs(servers) do
+        local ok, err = pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, lp)
+        end)
+        if ok then
+            hopped = true
+            task.wait(15)
+            break
+        else
+            dlog("Teleport failed: " .. tostring(err))
+            task.wait(2)
+        end
+    end
+
+    if not hopped then
+        dlog("All hops failed — fallback teleport")
+        markVisited(game.JobId)
+        pcall(function() TeleportService:Teleport(game.PlaceId) end)
+        task.wait(15)
+    end
+end
+
 -- ── Atlas launcher ────────────────────────────────────────────────────────────
-local function launchAtlas(map)
+local function launchAtlas(dlog)
     dlog("Launching Atlas...")
     task.spawn(function()
         local ok, err = pcall(function()
             loadstring(game:HttpGet(ATLAS_URL))()
         end)
-        if not ok then
-            dlog("Atlas error: " .. tostring(err))
-        end
+        if not ok then dlog("Atlas error: " .. tostring(err)) end
     end)
 end
 
--- ── Server hop ────────────────────────────────────────────────────────────────
-local function hop
-    dlog("Hopping to a random server...")
-    pcall(function()
-        TeleportService:Teleport(game.PlaceId)
-    end)
-    task.wait(15)
-end
-
--- ── Main logic ────────────────────────────────────────────────────────────────
+-- ── Main ──────────────────────────────────────────────────────────────────────
 local _stop = false
 
 local function run(dlog)
@@ -57,12 +136,10 @@ local function run(dlog)
     dlog("=== Sprout Hopper started ===")
 
     while not _stop do
-
         if hasSprout() then
             dlog("Sprout found! Starting Atlas...")
-            launchAtlas(map)
+            launchAtlas(dlog)
 
-            -- Poll until sprout disappears
             while not _stop do
                 task.wait(POLL_INTERVAL)
                 if not hasSprout() then
@@ -74,7 +151,6 @@ local function run(dlog)
 
             if _stop then break end
 
-            -- Wait 1 minute then hop
             dlog("Waiting " .. SPROUT_GONE_WAIT .. "s before hopping...")
             local waited = 0
             while waited < SPROUT_GONE_WAIT and not _stop do
@@ -85,10 +161,9 @@ local function run(dlog)
 
             if _stop then break end
         else
-            dlog("No sprout — hopping...")
-            hop
+            dlog("No sprout here — hopping...")
+            hop(dlog)
         end
-
     end
 
     dlog("=== Sprout Hopper stopped ===")
