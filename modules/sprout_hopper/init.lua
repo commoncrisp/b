@@ -11,7 +11,7 @@ local HOP_WAIT         = 4
 local VISITED_FILE     = "sprout_visited.json"
 local FAILS_FILE       = "sprout_fails.json"
 local FAIL_LIMIT       = 3
-local FAIL_WAIT        = 10
+local FAIL_WAIT        = 180
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
 local function loadVisited()
@@ -92,6 +92,17 @@ local function getServers()
     return valid
 end
 
+-- ── Atlas launcher ────────────────────────────────────────────────────────────
+local function launchAtlas(dlog)
+    dlog("Launching Atlas...")
+    task.spawn(function()
+        local ok, err = pcall(function()
+            loadstring(game:HttpGet(ATLAS_URL))()
+        end)
+        if not ok then dlog("Atlas error: " .. tostring(err)) end
+    end)
+end
+
 -- ── Hop ───────────────────────────────────────────────────────────────────────
 local function hop(dlog)
     local servers = getServers()
@@ -140,29 +151,23 @@ local function hop(dlog)
         dlog("Hop failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ")")
 
         if consecutiveFails >= FAIL_LIMIT then
-            dlog("Too many fails — leaving game, waiting " .. FAIL_WAIT .. "s, then rejoining...")
+            dlog("Teleports blocked — launching Atlas for " .. (FAIL_WAIT/60) .. " mins while waiting...")
             consecutiveFails = 0
             resetFails()
             saveVisited({})
-            lp:Kick("SproutHopper: rejoining...")
-            task.wait(FAIL_WAIT)
-            TeleportService:Teleport(game.PlaceId)
+            launchAtlas(dlog)
+            local waited = 0
+            while waited < FAIL_WAIT do
+                task.wait(10)
+                waited = waited + 10
+                dlog("Resuming hops in " .. (FAIL_WAIT - waited) .. "s...")
+            end
+            dlog("Resuming hops now...")
         else
             pcall(function() TeleportService:Teleport(game.PlaceId) end)
             task.wait(15)
         end
     end
-end
-
--- ── Atlas launcher ────────────────────────────────────────────────────────────
-local function launchAtlas(dlog)
-    dlog("Launching Atlas...")
-    task.spawn(function()
-        local ok, err = pcall(function()
-            loadstring(game:HttpGet(ATLAS_URL))()
-        end)
-        if not ok then dlog("Atlas error: " .. tostring(err)) end
-    end)
 end
 
 -- ── Main ──────────────────────────────────────────────────────────────────────
