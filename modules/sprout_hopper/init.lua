@@ -22,7 +22,7 @@ local function saveVisited(visited)
     pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
 end
 
-local function targetVisited(jobId)
+local function markVisited(jobId)
     local visited = loadVisited()
     table.insert(visited, jobId)
     -- only keep last 20 to avoid list growing forever
