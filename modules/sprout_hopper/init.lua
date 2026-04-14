@@ -94,17 +94,40 @@ local function TPReturner(dlog)
                 num = num + 1
             end
 
-            if Possible then
+if Possible then
                 dlog("Hopping to server: " .. ID)
                 table.insert(AllIDs, ID)
                 pcall(function()
                     writefile("NotSameServers.json", HttpService:JSONEncode(AllIDs))
                 end)
                 task.wait(1)
+                local originalJobId = game.JobId
                 pcall(function()
                     TeleportService:TeleportToPlaceInstance(game.PlaceId, ID, lp)
                 end)
-                task.wait(4)
+                task.wait(15)
+                if game.JobId ~= originalJobId then
+                    hopFails = 0
+                    dlog("Hop successful!")
+                else
+                    hopFails = hopFails + 1
+                    dlog("Hop failed (" .. hopFails .. "/" .. HOP_FAIL_LIMIT .. ")")
+                    if hopFails >= HOP_FAIL_LIMIT then
+                        dlog("Too many failures — running Atlas for " .. (HOP_FAIL_WAIT/60) .. " mins...")
+                        hopFails = 0
+                        AllIDs = {}
+                        foundAnything = ""
+                        pcall(function() delfile("NotSameServers.json") end)
+                        launchAtlas(dlog)
+                        local waited = 0
+                        while waited < HOP_FAIL_WAIT do
+                            task.wait(10)
+                            waited = waited + 10
+                            dlog("Resuming hops in " .. (HOP_FAIL_WAIT - waited) .. "s...")
+                        end
+                        dlog("Resuming hops now...")
+                    end
+                end
             end
         end
     end
