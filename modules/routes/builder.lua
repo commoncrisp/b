@@ -1,7 +1,7 @@
 local Players     = game:GetService("Players")
 local lp          = Players.LocalPlayer
 local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
-local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper" }
+local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper", "gifted_farmer" }
 local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
 
 -- Materials (select by amount)
@@ -60,7 +60,7 @@ local ITEM_OPTIONS = {
 -- Tools (trigger fires when player has this tool OR better in the tier list)
 local TOOL_OPTIONS = {
     -- Tools
-    "Scooper", "Rake", "Clippers", "Magnet", "Vacuum", "Super-Scooper",
+    "Scooper", "Rake", "Clippers", "Magnet", "Empty", "Super Scooper",
     "Pulsar", "Electro-Magnet", "Scissors", "Honey Dipper", "Bubble Wand",
     "Scythe", "Sticker-Seeker", "Golden Rake", "Spark Staff",
     "Porcelain Dipper", "Petal Wand", "Tide Popper", "Dark Scythe", "Gummyballer",
@@ -326,6 +326,7 @@ local function open(onRun)
         if a.type=="adjuster_loop" then aStr = "adj:"   .. (a.comp or "?") end
         if a.type=="rj_buyer"      then aStr = "rj("    .. (a.interval or "?") .. "m)" end         
         if a.type=="sprout_hopper" then aStr = "sprout" end
+        if a.type=="gifted_farmer"  then aStr = "gifted" end
         local tStr = t.type
         if t.type=="honey"    then tStr = "honey≥"  .. tostring(t.amount  or "?") end
         if t.type=="material" then tStr = (t.name or "?") .. "≥" .. tostring(t.amount or "?") end
@@ -467,6 +468,14 @@ local function open(onRun)
     local shAtlasDd = makeDropdown(aSH, ATLAS_OPTIONS, UDim2.new(0,260,0,28), UDim2.new(0,104,0,1), function(v)
         currentAction.atlasConfig = v
     end)
+
+    local aSH = Instance.new("Frame", actSec)
+        -- gifted_farmer fields (no config needed)
+    local aGF = Instance.new("Frame", actSec)
+    aGF.Size = UDim2.new(1,0,0,20); aGF.BackgroundTransparency = 1; aGF.Visible = false
+    acfFrames["gifted_farmer"] = aGF
+    lbl(aGF, "Runs all 4 gifted phases automatically.", UDim2.new(1,0,1,0), UDim2.new(0,0,0,0), 10, Color3.fromRGB(110,110,110))
+
 
     -- Trigger section
     local trgSec   = section(stepScroll, "Trigger")
