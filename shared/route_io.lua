@@ -1,4 +1,4 @@
-﻿local HttpService = game:GetService("HttpService")
+ocal HttpService = game:GetService("HttpService")
 
 -- ── Route file naming ─────────────────────────────────────────────────────────
 local PREFIX = "bss_route_"
