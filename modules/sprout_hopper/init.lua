@@ -12,7 +12,6 @@ local VISITED_FILE     = "sprout_visited.json"
 local FAILS_FILE       = "sprout_fails.json"
 local FAIL_LIMIT       = 3
 local FAIL_WAIT        = 180
-local MIN_EMPTY_SLOTS  = 1
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
 local function loadVisited()
@@ -84,10 +83,9 @@ local function getServers()
 
     local valid = {}
     for _, server in pairs(result.data) do
-        local emptySlots = server.maxPlayers - server.playing
         if server.id ~= game.JobId
         and not wasVisited(server.id)
-        and emptySlots >= MIN_EMPTY_SLOTS then
+        and server.playing < server.maxPlayers then
             table.insert(valid, server)
         end
     end
@@ -130,34 +128,6 @@ local function hop(dlog)
     for _, server in ipairs(servers) do
         if consecutiveFails >= FAIL_LIMIT then break end
 
-        -- ── Re-check slots live just before teleporting ──────────────────────
-        local freshOk, freshResult = pcall(function()
-            local url = "https://games.roblox.com/v1/games/"
-                .. game.PlaceId
-                .. "/servers/Public?sortOrder=Asc&limit=100"
-            return HttpService:JSONDecode(game:HttpGet(url))
-        end)
-
-        if freshOk and freshResult and freshResult.data then
-            local stillFresh = false
-            for _, fresh in ipairs(freshResult.data) do
-                if fresh.id == server.id then
-                    local emptySlots = fresh.maxPlayers - fresh.playing
-                    if emptySlots >= MIN_EMPTY_SLOTS then
-                        stillFresh = true
-                    else
-                        dlog("Server filled up before teleport (" .. emptySlots .. " slots) — skipping...")
-                    end
-                    break
-                end
-            end
-            if not stillFresh then
-                task.wait(1)
-                goto continue
-            end
-        end
-        -- ─────────────────────────────────────────────────────────────────────
-
         local ok, err = pcall(function()
             TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
         end)
@@ -175,11 +145,11 @@ local function hop(dlog)
                 consecutiveFails = consecutiveFails + 1
                 saveFails(consecutiveFails)
                 dlog("Teleport silently failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ")")
-                if consecutiveFails >= FAIL_LIMIT then break end
+                if consecutiveFails >= FAIL_LIMIT then
+                    break
+                end
             end
         end
-
-        ::continue::
     end
 
     if not hopped then
@@ -217,7 +187,7 @@ local function run(dlog)
         local ok, err = pcall(function()
             if hasSprout() then
                 dlog("Sprout found! Starting Atlas...")
-                launchAtlas(dlog)
+                launchAtlas(map)
 
                 while not _stop do
                     task.wait(POLL_INTERVAL)
