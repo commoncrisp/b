@@ -38,7 +38,7 @@ end
 --    minutes        number
 
 -- ── Validation ────────────────────────────────────────────────────────────────
-local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper", "gifted_farmer" }
+local VALID_ACTION_TYPES = { atlas_config=true, adjuster_loop=true, rj_buyer=true, sprout_hopper=true, gifted_farmer=true }
 local VALID_TRIGGER_TYPES = { honey=true, material=true, item=true, tool=true, time=true }
 
 local function validateStep(step, i)
