@@ -25,7 +25,7 @@ local function saveVisited(visited)
     pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
 end
 
-local function markVisited(jobId)
+local function targetVisited(jobId)
     local visited = loadVisited()
     table.insert(visited, jobId)
     while #visited > 20 do table.remove(visited, 1) end
@@ -209,7 +209,20 @@ local function run(dlog)
                 end
             else
                 dlog("No sprout here — hopping...")
-                hop(dlog)
+                local ok, err = pcall(function()
+                    getgenv().Delta.ServerHop()
+                    task.wait(5)
+                    getgenv().Delta.ServerHop()
+                    task.wait(5)
+                    getgenv().Delta.ServerHop()
+                    task.wait(5)
+                    getgenv().Delta.ServerHop()
+                    task.wait(5)
+                end)
+                if not ok then
+                    dlog("Delta hop failed: " .. tostring(err) .. " — falling back...")
+                    hop(dlog)
+                end
             end
         end)
 
