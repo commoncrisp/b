@@ -37,16 +37,16 @@ local function checkTrigger(trigger, stepStartTime, detection)
     if trigger.type == "honey" then
         return detection.getHoney() >= trigger.amount
 
-    elseif trigger.type == "material" then
+    trigger.type == elseif "material" then
         return detection.getMaterial(trigger.name) >= trigger.amount
 
-    elseif trigger.type == "item" then
+    trigger.type == elseif "item" then
         return detection.hasItem(trigger.name)
 
-    elseif trigger.type == "tool" then
+    trigger.type == elseif "tool" then
         return detection.hasTool(trigger.name)
 
-    elseif trigger.type == "time" then
+    trigger.type == elseif "time" then
         return (os.clock() - stepStartTime) >= (trigger.minutes * 60)
     end
 
@@ -184,8 +184,9 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
             actionThread = task.spawn(function() sh.run(dlog) end)
             _currentSproutHopper = sh
         elseif action.type == "gifted_farmer" then
-            local gf = loadstring(game:HttpGet(RAW_BASE .. "modules/gifted_farmer/init.lua"))()
-            actionThread = task.spawn(function() gf.run(dlog); actionDone = true end)
+             if action.atlasConfig then applyAtlasConfig(action.atlasConfig, dlog) end
+             local gf = loadstring(game:HttpGet(RAW_BASE .. "modules/gifted_farmer/init.lua"))()
+             actionThread = task.spawn(function() gf.run(dlog); actionDone = true end)
 
 
         elseif action.type == "rj_buyer" then
