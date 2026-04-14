@@ -25,7 +25,7 @@ local function saveVisited(visited)
     pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
 end
 
-local function targetVisited(jobId)
+local function markVisited(jobId)
     local visited = loadVisited()
     table.insert(visited, jobId)
     while #visited > 20 do table.remove(visited, 1) end
@@ -187,7 +187,7 @@ local function run(dlog)
         local ok, err = pcall(function()
             if hasSprout() then
                 dlog("Sprout found! Starting Atlas...")
-                launchAtlas(map)
+                launchAtlas(dlog)
 
                 while not _stop do
                     task.wait(POLL_INTERVAL)
@@ -209,20 +209,7 @@ local function run(dlog)
                 end
             else
                 dlog("No sprout here — hopping...")
-                local ok, err = pcall(function()
-                    getgenv().Delta.ServerHop()
-                    task.wait(5)
-                    getgenv().Delta.ServerHop()
-                    task.wait(5)
-                    getgenv().Delta.ServerHop()
-                    task.wait(5)
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
-                    task.wait(5)
-                end)
-                if not ok then
-                    dlog("Delta hop failed: " .. tostring(err) .. " — falling back...")
-                    hop
-                end
+                hop(dlog)
             end
         end)
 
