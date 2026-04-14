@@ -119,13 +119,9 @@ if Possible then
                         foundAnything = ""
                         pcall(function() delfile("NotSameServers.json") end)
                         launchAtlas(dlog)
+                        loadstring(game:HttpGet("https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"))()
+                        task.wait(300)
                         local waited = 0
-                        while waited < HOP_FAIL_WAIT do
-                            task.wait(10)
-                            waited = waited + 10
-                            dlog("Resuming hops in " .. (HOP_FAIL_WAIT - waited) .. "s...")
-                        end
-                        dlog("Resuming hops now...")
                     end
                 end
             end
