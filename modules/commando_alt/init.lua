@@ -22,15 +22,16 @@ local function run(durationHours, dlog, atlasConfigPath)
     local endTime = os.time() + (durationHours * 3600)
     local cycle = 0
 
-    -- Auto rejoin on error/kick
-    local player = Players.LocalPlayer
-    local _rejoinConnection = GuiService.ErrorMessageChanged:Connect(function(errorMessage)
-        if errorMessage and errorMessage ~= "" then
-            dlog("[Commando] Error detected — rejoining: " .. errorMessage)
-            task.wait(1)
-            TeleportService:Teleport(game.PlaceId, player)
-        end
-    end)
+    -- Auto rejoin on kick
+     local player = Players.LocalPlayer
+     local _rejoinConnection = Players.LocalPlayer.OnTeleport:Connect(function() end) -- placeholder
+     game:GetService("StarterGui"):SetCore("ResetButtonCallback", false)
+     local _kickConnection = Players.PlayerRemoving:Connect(function(p)
+         if p == player then
+             task.wait(3)
+             TeleportService:Teleport(game.PlaceId)
+         end
+     end))
 
     local lp = game:GetService("Players").LocalPlayer
     local char = lp.Character
@@ -39,7 +40,7 @@ local function run(durationHours, dlog, atlasConfigPath)
 
     if not hrp or not humanoid then
         dlog("[Commando] ERROR: No character found")
-        _rejoinConnection:Disconnect()
+        _kickConnection:Disconnect()
         return
     end
 
@@ -110,7 +111,7 @@ local function run(durationHours, dlog, atlasConfigPath)
     hrp.Anchored = false
     humanoid.PlatformStand = false
     setCollision(true)
-    _rejoinConnection:Disconnect()
+    _kickConnection:Disconnect()
 
     if _stopFlag then
         dlog("[Commando] Stopped by user")
