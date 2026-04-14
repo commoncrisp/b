@@ -1,4 +1,4 @@
-ocal HttpService = game:GetService("HttpService")
+local HttpService = game:GetService("HttpService")
 local Players     = game:GetService("Players")
 local lp          = Players.LocalPlayer
 
@@ -83,6 +83,7 @@ end
 -- ── Runner state (one route at a time) ───────────────────────────────────────
 local _running  = false
 local _stopFlag = false
+local _currentSproutHopper  = nil
 
 local function stop()
     _stopFlag = true
@@ -228,6 +229,10 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
         actionStop = true
         if actionThread then
             pcall(function() task.cancel(actionThread) end)
+        end
+        if _currentSproutHopper then
+            _currentSproutHopper.stop()
+            _currentSproutHopper = nil
         end
     end
 
