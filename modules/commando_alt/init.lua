@@ -1,7 +1,6 @@
 -- modules/commando_alt/init.lua
 local RunService = game:GetService("RunService")
 local RAW_BASE = "https://raw.githubusercontent.com/commoncrisp/b/main/"
-local GuiService = game:GetService("GuiService")
 local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 
@@ -22,25 +21,14 @@ local function run(durationHours, dlog, atlasConfigPath)
     local endTime = os.time() + (durationHours * 3600)
     local cycle = 0
 
-    -- Auto rejoin on kick
-     local player = Players.LocalPlayer
-     local _rejoinConnection = Players.LocalPlayer.OnTeleport:Connect(function() end) -- placeholder
-     game:GetService("StarterGui"):SetCore("ResetButtonCallback", false)
-     local _kickConnection = Players.PlayerRemoving:Connect(function(p)
-         if p == player then
-             task.wait(3)
-             TeleportService:Teleport(game.PlaceId)
-         end
-     end))
-
-    local lp = game:GetService("Players").LocalPlayer
+    local player = Players.LocalPlayer
+    local lp = player
     local char = lp.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     local humanoid = char and char:FindFirstChild("Humanoid")
 
     if not hrp or not humanoid then
         dlog("[Commando] ERROR: No character found")
-        _kickConnection:Disconnect()
         return
     end
 
@@ -111,7 +99,6 @@ local function run(durationHours, dlog, atlasConfigPath)
     hrp.Anchored = false
     humanoid.PlatformStand = false
     setCollision(true)
-    _kickConnection:Disconnect()
 
     if _stopFlag then
         dlog("[Commando] Stopped by user")
