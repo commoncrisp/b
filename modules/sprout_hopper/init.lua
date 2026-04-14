@@ -12,7 +12,7 @@ local VISITED_FILE     = "sprout_visited.json"
 local FAILS_FILE       = "sprout_fails.json"
 local FAIL_LIMIT       = 3
 local FAIL_WAIT        = 180
-local MIN_EMPTY_SLOTS  = 4
+local MIN_EMPTY_SLOTS  = 2
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
 local function loadVisited()
