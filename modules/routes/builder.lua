@@ -1,4 +1,4 @@
-ocal Players     = game:GetService("Players")
+local Players     = game:GetService("Players")
 local lp          = Players.LocalPlayer
 local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper" }
@@ -324,7 +324,8 @@ local function open(onRun)
         local aStr = a.type
         if a.type=="atlas_config"  then aStr = "atlas:" .. (a.config or "?"):match("([^/]+%.json)$"):gsub("%.json","") end
         if a.type=="adjuster_loop" then aStr = "adj:"   .. (a.comp or "?") end
-        if a.type=="rj_buyer"      then aStr = "rj("    .. (a.interval or "?") .. "m)" end
+        if a.type=="rj_buyer"      then aStr = "rj("    .. (a.interval or "?") .. "m)" end         
+        if a.type=="sprout_hopper" then aStr = "sprout" end
         local tStr = t.type
         if t.type=="honey"    then tStr = "honey≥"  .. tostring(t.amount  or "?") end
         if t.type=="material" then tStr = (t.name or "?") .. "≥" .. tostring(t.amount or "?") end
@@ -528,7 +529,8 @@ local function open(onRun)
         compDd.setValue(currentAction.comp or COMP_OPTIONS[1])
         adjAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])
         intBox.Text = currentAction.interval and tostring(currentAction.interval) or ""
-        rjAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])
+        rjAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])         
+        shAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])
 
         trgTypeDd.setValue(currentTrigger.type)
         for t, f in pairs(trFrames) do f.Visible = (t == currentTrigger.type) end
