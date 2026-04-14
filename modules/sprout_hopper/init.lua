@@ -12,6 +12,7 @@ local VISITED_FILE     = "sprout_visited.json"
 local FAILS_FILE       = "sprout_fails.json"
 local FAIL_LIMIT       = 3
 local FAIL_WAIT        = 180
+local MIN_EMPTY_SLOTS  = 3
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
 local function loadVisited()
@@ -83,9 +84,10 @@ local function getServers()
 
     local valid = {}
     for _, server in pairs(result.data) do
+        local emptySlots = server.maxPlayers - server.playing
         if server.id ~= game.JobId
         and not wasVisited(server.id)
-        and server.playing < server.maxPlayers then
+        and emptySlots >= MIN_EMPTY_SLOTS then
             table.insert(valid, server)
         end
     end
