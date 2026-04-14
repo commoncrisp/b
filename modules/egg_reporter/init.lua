@@ -180,6 +180,7 @@ local function run(dlog)
         saveSession({ sessionStart = sessionStart, lastReport = lastReport, startCounts = startCounts })
     end
 
+    local timeLeft = REPORT_INTERVAL - (os.time() - lastReport)
     dlog("Reporter running — reporting every " .. (REPORT_INTERVAL / 60) .. " mins.")
     dlog("Next report in: " .. math.max(0, math.floor(timeLeft)) .. "s")
 
@@ -188,8 +189,7 @@ local function run(dlog)
         if _stop then break end
 
         local currentTime = os.time()
-        local timeLeft = REPORT_INTERVAL - (currentTime - lastReport)
-        
+        timeLeft = REPORT_INTERVAL - (currentTime - lastReport)
 
         if currentTime - lastReport >= REPORT_INTERVAL then
             local current     = snapshot()
