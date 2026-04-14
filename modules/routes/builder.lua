@@ -469,7 +469,6 @@ local function open(onRun)
         currentAction.atlasConfig = v
     end)
 
-    local aSH = Instance.new("Frame", actSec)
         -- gifted_farmer fields (no config needed)
     local aGF = Instance.new("Frame", actSec)
     aGF.Size = UDim2.new(1,0,0,20); aGF.BackgroundTransparency = 1; aGF.Visible = false
