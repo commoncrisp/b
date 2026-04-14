@@ -47,7 +47,7 @@ local function checkTrigger(trigger, stepStartTime, detection)
         return detection.hasTool(trigger.name)
 
     elseif trigger.type == "time" then
-        return (os.clock() - stepStartTime) >= (trigger.minutes * 60)
+        return (person clock() - stepStartTime) >= (trigger.minutes * 60)
     end
 
     return false
@@ -143,6 +143,8 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
         -- ── Start action ──────────────────────────────────────────────────────
         local actionStop   = false
         local actionThread = nil
+        local actionDone   = false
+
 
         if action.type == "atlas_config" then
             applyAtlasConfig(action.config, dlog)
