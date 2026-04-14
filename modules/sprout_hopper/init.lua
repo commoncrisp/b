@@ -7,7 +7,7 @@ local lp              = Players.LocalPlayer
 local ATLAS_URL        = "https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"
 local POLL_INTERVAL    = 5
 local SPROUT_GONE_WAIT = 20
-local HOP_WAIT         = 4
+local _WAIT         = 4
 local VISITED_FILE     = "sprout_visited.json"
 local FAILS_FILE       = "sprout_fails.json"
 local FAIL_LIMIT       = 3
@@ -109,6 +109,13 @@ end
 local function hop(dlog)
     local servers = getServers()
 
+    local lastTeleportFailReason = nil
+
+    TeleportService.TeleportInitFailed:Connect(function(player, reason, errorMessage)
+        lastTeleportFailReason = reason
+        dlog("TeleportInitFailed: " .. tostring(reason) .. " — " .. tostring(errorMessage))
+    end)
+
     if #servers == 0 then
         dlog("No unvisited servers found — clearing history and retrying in " .. HOP_WAIT .. "s...")
         saveVisited({})
@@ -172,9 +179,14 @@ local function hop(dlog)
                 resetFails()
                 break
             else
-                consecutiveFails = consecutiveFails + 1
-                saveFails(consecutiveFails)
-                dlog("Teleport silently failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ")")
+                if lastTeleportFailReason ~= Enum.TeleportResult.GameFull then
+                    consecutiveFails = consecutiveFails + 1
+                    saveFails(consecutiveFails)
+                    dlog("Teleport silently failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ")")
+                else
+                    dlog("Server was full — not counting as failure, skipping...")
+                end
+                lastTeleportFailReason = nil
                 if consecutiveFails >= FAIL_LIMIT then break end
             end
         end
