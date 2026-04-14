@@ -7,56 +7,21 @@ local lp              = Players.LocalPlayer
 local ATLAS_URL        = "https://raw.githubusercontent.com/Chris12089/atlasbss/main/script.lua"
 local POLL_INTERVAL    = 5
 local SPROUT_GONE_WAIT = 20
-local HOP_WAIT         = 4
-local VISITED_FILE     = "sprout_visited.json"
-local FAILS_FILE       = "sprout_fails.json"
-local FAIL_LIMIT       = 3
-local FAIL_WAIT        = 60
 
--- ── Visited server tracking ───────────────────────────────────────────────────
-local function loadVisited()
-    local ok, data = pcall(function()
-        return HttpService:JSONDecode(readfile(VISITED_FILE))
+-- ── Server hop state ──────────────────────────────────────────────────────────
+local AllIDs       = {}
+local foundAnything = ""
+local actualHour   = os.date("!*t").hour
+
+local File = pcall(function()
+    AllIDs = HttpService:JSONDecode(readfile("NotSameServers.json"))
+end)
+if not File then
+    table.insert(AllIDs, actualHour)
+    pcall(function()
+        writefile("NotSameServers.json", HttpService:JSONEncode(AllIDs))
     end)
-    return (ok and type(data) == "table") and data or {}
 end
-
-local function saveVisited(visited)
-    pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
-end
-
-local function markVisited(jobId)
-    local visited = loadVisited()
-    table.insert(visited, jobId)
-    while #visited > 20 do table.remove(visited, 1) end
-    saveVisited(visited)
-end
-
-local function wasVisited(jobId)
-    local visited = loadVisited()
-    for _, id in ipairs(visited) do
-        if id == jobId then return true end
-    end
-    return false
-end
-
--- ── Fail counter ──────────────────────────────────────────────────────────────
-local function loadFails()
-    local ok, data = pcall(function()
-        return HttpService:JSONDecode(readfile(FAILS_FILE))
-    end)
-    return (ok and type(data) == "table") and data.count or 0
-end
-
-local function saveFails(count)
-    pcall(writefile, FAILS_FILE, HttpService:JSONEncode({ count = count }))
-end
-
-local function resetFails()
-    saveFails(0)
-end
-
-local consecutiveFails = loadFails()
 
 -- ── Sprout detection ──────────────────────────────────────────────────────────
 local function findSprout()
@@ -67,29 +32,6 @@ end
 
 local function hasSprout()
     return findSprout() ~= nil
-end
-
--- ── Server list ───────────────────────────────────────────────────────────────
-local function getServers()
-    local url = "https://games.roblox.com/v1/games/"
-        .. game.PlaceId
-        .. "/servers/Public?sortOrder=Asc&limit=100"
-
-    local ok, result = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet(url))
-    end)
-
-    if not ok or not result or not result.data then return {} end
-
-    local valid = {}
-    for _, server in pairs(result.data) do
-        if server.id ~= game.JobId
-        and not wasVisited(server.id)
-        and server.playing < server.maxPlayers then
-            table.insert(valid, server)
-        end
-    end
-    return valid
 end
 
 -- ── Atlas launcher ────────────────────────────────────────────────────────────
@@ -103,74 +45,72 @@ local function launchAtlas(dlog)
     end)
 end
 
--- ── Hop ───────────────────────────────────────────────────────────────────────
-local function hop(dlog)
-    local servers = getServers()
-
-    if #servers == 0 then
-        dlog("No unvisited servers found — clearing history and retrying in " .. HOP_WAIT .. "s...")
-        saveVisited({})
-        task.wait(HOP_WAIT)
-        return
+-- ── Server hop ────────────────────────────────────────────────────────────────
+local function TPReturner(dlog)
+    local Site
+    if foundAnything == "" then
+        Site = HttpService:JSONDecode(game:HttpGet(
+            "https://games.roblox.com/v1/games/" .. game.PlaceId ..
+            "/servers/Public?sortOrder=Asc&limit=100"))
+    else
+        Site = HttpService:JSONDecode(game:HttpGet(
+            "https://games.roblox.com/v1/games/" .. game.PlaceId ..
+            "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. foundAnything))
     end
 
-    for i = #servers, 2, -1 do
-        local j = math.random(i)
-        servers[i], servers[j] = servers[j], servers[i]
+    if Site.nextPageCursor
+    and Site.nextPageCursor ~= "null"
+    and Site.nextPageCursor ~= nil then
+        foundAnything = Site.nextPageCursor
+    else
+        foundAnything = ""
     end
 
-    dlog("Found " .. #servers .. " unvisited servers — hopping...")
-    markVisited(game.JobId)
+    local ID  = ""
+    local num = 0
 
-    local originalJobId = game.JobId
-    local hopped = false
+    for _, v in pairs(Site.data) do
+        local Possible = true
+        ID = tostring(v.id)
 
-    for _, server in ipairs(servers) do
-        if consecutiveFails >= FAIL_LIMIT then break end
-
-        local ok, err = pcall(function()
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
-        end)
-        if not ok then
-            dlog("Teleport failed: " .. tostring(err))
-            task.wait(2)
-        else
-            task.wait(15)
-            if game.JobId ~= originalJobId then
-                hopped = true
-                consecutiveFails = 0
-                resetFails()
-                break
-            else
-                consecutiveFails = consecutiveFails + 1
-                saveFails(consecutiveFails)
-                dlog("Teleport silently failed (" .. consecutiveFails .. "/" .. FAIL_LIMIT .. ")")
-                if consecutiveFails >= FAIL_LIMIT then
-                    break
+        if tonumber(v.maxPlayers) > tonumber(v.playing) then
+            for _, Existing in pairs(AllIDs) do
+                if num ~= 0 then
+                    if ID == tostring(Existing) then
+                        Possible = false
+                    end
+                else
+                    if tonumber(actualHour) ~= tonumber(Existing) then
+                        pcall(function()
+                            delfile("NotSameServers.json")
+                            AllIDs = {}
+                            table.insert(AllIDs, actualHour)
+                        end)
+                    end
                 end
+                num = num + 1
+            end
+
+            if Possible then
+                dlog("Hopping to server: " .. ID)
+                table.insert(AllIDs, ID)
+                pcall(function()
+                    writefile("NotSameServers.json", HttpService:JSONEncode(AllIDs))
+                end)
+                task.wait(1)
+                pcall(function()
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, ID, lp)
+                end)
+                task.wait(4)
             end
         end
     end
+end
 
-    if not hopped then
-        if consecutiveFails >= FAIL_LIMIT then
-            dlog("Teleports blocked — launching Atlas for " .. (FAIL_WAIT/60) .. " mins while waiting...")
-            consecutiveFails = 0
-            resetFails()
-            saveVisited({})
-            launchAtlas(dlog)
-            local waited = 0
-            while waited < FAIL_WAIT do
-                task.wait(10)
-                waited = waited + 10
-                dlog("Resuming hops in " .. (FAIL_WAIT - waited) .. "s...")
-            end
-            dlog("Resuming hops now...")
-        else
-            dlog("All servers tried — fallback teleport")
-            pcall(function() TeleportService:Teleport(game.PlaceId) end)
-            task.wait(15)
-        end
+local function hop(dlog)
+    pcall(function() TPReturner(dlog) end)
+    if foundAnything ~= "" then
+        pcall(function() TPReturner(dlog) end)
     end
 end
 
