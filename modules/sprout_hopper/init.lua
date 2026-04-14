@@ -11,7 +11,7 @@ local HOP_WAIT         = 4
 local VISITED_FILE     = "sprout_visited.json"
 local FAILS_FILE       = "sprout_fails.json"
 local FAIL_LIMIT       = 3
-local FAIL_WAIT        = 180
+local FAIL_WAIT        = 60
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
 local function loadVisited()
