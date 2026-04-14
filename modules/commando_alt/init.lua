@@ -1,6 +1,9 @@
 -- modules/commando_alt/init.lua
 local RunService = game:GetService("RunService")
 local RAW_BASE = "https://raw.githubusercontent.com/commoncrisp/b/main/"
+local GuiService = game:GetService("GuiService")
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
 
 local POS_START = Vector3.new(460,   52.5, 166)
 local POS_A     = Vector3.new(480,   52.5, 154.3)
@@ -19,6 +22,16 @@ local function run(durationHours, dlog, atlasConfigPath)
     local endTime = os.time() + (durationHours * 3600)
     local cycle = 0
 
+    -- Auto rejoin on error/kick
+    local player = Players.LocalPlayer
+    local _rejoinConnection = GuiService.ErrorMessageChanged:Connect(function(errorMessage)
+        if errorMessage and errorMessage ~= "" then
+            dlog("[Commando] Error detected — rejoining: " .. errorMessage)
+            task.wait(1)
+            TeleportService:Teleport(game.PlaceId, player)
+        end
+    end)
+
     local lp = game:GetService("Players").LocalPlayer
     local char = lp.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -26,6 +39,7 @@ local function run(durationHours, dlog, atlasConfigPath)
 
     if not hrp or not humanoid then
         dlog("[Commando] ERROR: No character found")
+        _rejoinConnection:Disconnect()
         return
     end
 
@@ -41,7 +55,6 @@ local function run(durationHours, dlog, atlasConfigPath)
         humanoid.PlatformStand = true
         hrp.Anchored = false
 
-        -- disable collision while flying
         local collisionConnection = RunService.Heartbeat:Connect(function()
             setCollision(false)
         end)
@@ -62,7 +75,6 @@ local function run(durationHours, dlog, atlasConfigPath)
 
         while not done do task.wait() end
 
-        -- re-enable collision when done
         collisionConnection:Disconnect()
         setCollision(true)
     end
@@ -98,6 +110,7 @@ local function run(durationHours, dlog, atlasConfigPath)
     hrp.Anchored = false
     humanoid.PlatformStand = false
     setCollision(true)
+    _rejoinConnection:Disconnect()
 
     if _stopFlag then
         dlog("[Commando] Stopped by user")
