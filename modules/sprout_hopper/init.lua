@@ -164,15 +164,26 @@ local function hop(dlog)
 end
 
 -- ── Main ──────────────────────────────────────────────────────────────────────
+-- ── Main ──────────────────────────────────────────────────────────────────────
 local _stop = false
+local START_TIME = tick()
+local MAX_RUN_TIME = 300 -- 5 minutes in seconds
 
 local function run(dlog)
     dlog = dlog or function(msg) print("[SproutHopper] " .. msg) end
     _stop = false
+    START_TIME = tick()
 
     dlog("=== Sprout Hopper started ===")
 
     while not _stop do
+        -- Auto-shutdown after 5 minutes
+        if tick() - START_TIME >= MAX_RUN_TIME then
+            dlog("5 minute time limit reached — shutting down...")
+            game:Shutdown()
+            return
+        end
+
         local ok, err = pcall(function()
             if hasSprout() then
                 dlog("Sprout found! Starting Atlas...")
@@ -209,10 +220,6 @@ local function run(dlog)
     end
 
     dlog("=== Sprout Hopper stopped ===")
-end
-
-local function stop()
-    _stop = true
 end
 
 return { run = run, stop = stop }
