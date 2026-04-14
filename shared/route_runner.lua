@@ -174,6 +174,10 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
             local sh = loadstring(game:HttpGet(RAW_BASE .. "modules/sprout_hopper/init.lua"))()
             actionThread = task.spawn(function() sh.run(dlog) end)
             _currentSproutHopper = sh
+        elseif action.type == "gifted_farmer" then
+            local gf = loadstring(game:HttpGet(RAW_BASE .. "modules/gifted_farmer/init.lua"))()
+            actionThread = task.spawn(function() gf.run(dlog) end)
+
 
         elseif action.type == "rj_buyer" then
             if action.atlasConfig then
