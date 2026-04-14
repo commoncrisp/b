@@ -9,9 +9,12 @@ local POLL_INTERVAL    = 5
 local SPROUT_GONE_WAIT = 20
 
 -- ── Server hop state ──────────────────────────────────────────────────────────
-local AllIDs       = {}
+local AllIDs        = {}
 local foundAnything = ""
-local actualHour   = os.date("!*t").hour
+local actualHour    = os.date("!*t").hour
+local hopFails      = 0
+local HOP_FAIL_LIMIT = 10
+local HOP_FAIL_WAIT  = 180
 
 local File = pcall(function()
     AllIDs = HttpService:JSONDecode(readfile("NotSameServers.json"))
@@ -35,7 +38,7 @@ local function hasSprout()
 end
 
 -- ── Atlas launcher ────────────────────────────────────────────────────────────
-local function launchAtlas(dlog)
+local function launchAtlas(map)
     dlog("Launching Atlas...")
     task.spawn(function()
         local ok, err = pcall(function()
