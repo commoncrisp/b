@@ -2,7 +2,7 @@ local Players     = game:GetService("Players")
 local lp          = Players.LocalPlayer
 local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
 local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper", "gifted_farmer", "star_treat_buyer" }
-local local "honey", "material", "item", "tool", "time" }
+local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
 
 -- Materials (select by amount)
 local local
