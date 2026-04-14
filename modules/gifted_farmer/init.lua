@@ -403,7 +403,7 @@ local function starTreatPhase()
         local data = BEE_DATA[slot.name]
         if data and data.rarity == "event" then
             log("Applying 8 star treats to " .. slot.name .. " @ " .. slot.slot)
-            for i = 1, 8 do
+            for i = 1, 1 do
                 useStarTreat(slot)
                 task.wait(TREAT_WAIT)
             end
