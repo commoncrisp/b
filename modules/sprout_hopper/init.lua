@@ -187,7 +187,7 @@ local function run(dlog)
         local ok, err = pcall(function()
             if hasSprout() then
                 dlog("Sprout found! Starting Atlas...")
-                launchAtlas(dlog)
+                launchAtlas(map)
 
                 while not _stop do
                     task.wait(POLL_INTERVAL)
@@ -216,12 +216,12 @@ local function run(dlog)
                     task.wait(5)
                     getgenv().Delta.ServerHop()
                     task.wait(5)
-                    getgenv().Delta.ServerHop()
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
                     task.wait(5)
                 end)
                 if not ok then
                     dlog("Delta hop failed: " .. tostring(err) .. " — falling back...")
-                    hop(dlog)
+                    hop
                 end
             end
         end)
