@@ -1,7 +1,7 @@
-local local"Players")
-local local
-local local "https://raw.githubusercontent.com/commoncrisp/b/main/"
-local AACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper", "gifted_farmer" }
+local Players     = game:GetService("Players")
+local lp          = Players.LocalPlayer
+local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
+local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper", "gifted_farmer", "star_treat_buyer" }
 local local "honey", "material", "item", "tool", "time" }
 
 -- Materials (select by amount)
