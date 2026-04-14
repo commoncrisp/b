@@ -12,7 +12,7 @@ local VISITED_FILE     = "sprout_visited.json"
 local FAILS_FILE       = "sprout_fails.json"
 local FAIL_LIMIT       = 3
 local FAIL_WAIT        = 180
-local MIN_EMPTY_SLOTS  = 2
+local MIN_EMPTY_SLOTS  = 4
 
 -- ── Visited server tracking ───────────────────────────────────────────────────
 local function loadVisited()
@@ -26,7 +26,7 @@ local function saveVisited(visited)
     pcall(writefile, VISITED_FILE, HttpService:JSONEncode(visited))
 end
 
-local function markVisited(jobId)
+local function targetVisited(jobId)
     local visited = loadVisited()
     table.insert(visited, jobId)
     while #visited > 20 do table.remove(visited, 1) end
