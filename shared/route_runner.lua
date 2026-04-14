@@ -47,7 +47,7 @@ local function checkTrigger(trigger, stepStartTime, detection)
         return detection.hasTool(trigger.name)
 
     elseif trigger.type == "time" then
-        return (person clock() - stepStartTime) >= (trigger.minutes * 60)
+        return (os.clock() - stepStartTime) >= (trigger.minutes * 60)
     end
 
     return false
@@ -185,7 +185,7 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
             _currentSproutHopper = sh
         elseif action.type == "gifted_farmer" then
             local gf = loadstring(game:HttpGet(RAW_BASE .. "modules/gifted_farmer/init.lua"))()
-            actionThread = task.spawn(function() gf.run(dlog) end)
+            actionThread = task.spawn(function() gf.run(dlog); actionDone = true end)
 
 
         elseif action.type == "rj_buyer" then
