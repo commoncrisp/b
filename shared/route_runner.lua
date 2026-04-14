@@ -162,7 +162,14 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
                         local ok, err = pcall(function()
                             runHiveAdjuster(comp, dlog, flyTo)
                         end)
-                        if not ok then dlog("[Adjuster] ERROR: " .. tostring(err)) end
+                        if not ok then
+                            dlog("[Adjuster] ERROR: " .. tostring(err))
+                        else
+                            dlog("[Adjuster] Comp satisfied!")
+                            actionDone = true
+                            break
+                        end
+                            
                     else
                         dlog("[Adjuster] ERROR: comp '" .. action.comp .. "' not found")
                     end
@@ -209,8 +216,12 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
 
         -- ── Poll trigger ──────────────────────────────────────────────────────
         while not _stopFlag do
-            task.wait(POLL_INTERVAL)
-            if checkTrigger(trigger, stepStartTime, detection) then
+             if actionDone then
+                 dlog("[Runner] Action self-completed — advancing")
+                 break
+             end
+             task.wait(POLL_INTERVAL)
+             if checkTrigger(trigger, stepStartTime, detection) then
                 dlog("[Runner] Trigger met — advancing")
                 break
             end
