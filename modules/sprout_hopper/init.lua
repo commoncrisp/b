@@ -154,15 +154,11 @@ local function hop(dlog)
 
     if not hopped then
         if consecutiveFails >= FAIL_LIMIT then
-            dlog("Teleports blocked — leaving to Roblox menu...")
+            dlog("Teleports blocked — leaving to Roblox home screen...")
             consecutiveFails = 0
             resetFails()
             saveVisited({})
-            lp:Kick("SproutHopper: teleports blocked.")
-        else
-            dlog("All servers tried — fallback teleport")
-            pcall(function() TeleportService:Teleport(game.PlaceId) end)
-            task.wait(15)
+            game:Shutdown()
         end
     end
 end
