@@ -1,11 +1,11 @@
-local Players     = game:GetService("Players")
-local lp          = Players.LocalPlayer
-local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
-local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper", "gifted_farmer" }
-local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
+local local"Players")
+local local
+local local "https://raw.githubusercontent.com/commoncrisp/b/main/"
+local AACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper", "gifted_farmer" }
+local local "honey", "material", "item", "tool", "time" }
 
 -- Materials (select by amount)
-local MATERIAL_OPTIONS = {
+local local
     -- Misc
     "Snowflake", "Ticket", "Gumdrop", "Coconut", "Stinger", "Honeysuckle",
     "Whirligig", "Jelly Beans", "Red Extract", "Blue Extract", "Glitter",
@@ -33,7 +33,7 @@ local MATERIAL_OPTIONS = {
 }
 
 -- Items (owned or not — masks, guards, belts, boots, gliders, planters)
-local ITEM_OPTIONS = {
+local local
     -- Masks / Hats
     "Helmet", "Propeller Hat", "Beekeeper's Mask", "Honey Mask", "Fire Mask",
     "Bubble Mask", "Gummy Mask", "Demon Mask", "Diamond Mask",
@@ -58,7 +58,7 @@ local ITEM_OPTIONS = {
 }
 
 -- Tools (trigger fires when player has this tool OR better in the tier list)
-local TOOL_OPTIONS = {
+local local
     -- Tools
     "Scooper", "Rake", "Clippers", "Magnet", "Empty", "Super Scooper",
     "Pulsar", "Electro-Magnet", "Scissors", "Honey Dipper", "Bubble Wand",
@@ -471,9 +471,12 @@ local function open(onRun)
 
         -- gifted_farmer fields (no config needed)
     local aGF = Instance.new("Frame", actSec)
-    aGF.Size = UDim2.new(1,0,0,20); aGF.BackgroundTransparency = 1; aGF.Visible = false
-    acfFrames["gifted_farmer"] = aGF
-    lbl(aGF, "Runs all 4 gifted phases automatically.", UDim2.new(1,0,1,0), UDim2.new(0,0,0,0), 10, Color3.fromRGB(110,110,110))
+             aGF.Size = UDim2.new(1,0,0,34); aGF.BackgroundTransparency = 1; aGF.Visible = false
+             acfFrames["gifted_farmer"] = aGF
+             lbl(aGF, "Atlas config", UDim2.new(0,100,1,0), UDim2.new(0,0,0,0), 11, Color3.fromRGB(150,150,150))
+             local gfAtlasDd = makeDropdown(aGF, ATLAS_OPTIONS, UDim2.new(0,260,0,28), UDim2.new(0,104,0,1), function(v)
+                 currentAction.atlasConfig = v
+             end)
 
 
     -- Trigger section
@@ -539,6 +542,7 @@ local function open(onRun)
         intBox.Text = currentAction.interval and tostring(currentAction.interval) or ""
         rjAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])         
         shAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])
+        gfAtlasDd.setValue(currentAction.atlasConfig or ATLAS_OPTIONS[1])
 
         trgTypeDd.setValue(currentTrigger.type)
         for t, f in pairs(trFrames) do f.Visible = (t == currentTrigger.type) end
