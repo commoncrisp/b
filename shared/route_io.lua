@@ -1,4 +1,4 @@
-local HttpService = game:GetService("HttpService")
+﻿local HttpService = game:GetService("HttpService")
 
 -- ── Route file naming ─────────────────────────────────────────────────────────
 local PREFIX = "bss_route_"
@@ -38,7 +38,7 @@ end
 --    minutes        number
 
 -- ── Validation ────────────────────────────────────────────────────────────────
-local VALID_ACTION_TYPES  = { atlas_config=true, adjuster_loop=true, rj_buyer=true }
+local VALID_ACTION_TYPES  = { atlas_config=true, adjuster_loop=true, rj_buyer=true, sprout_hopper=true }
 local VALID_TRIGGER_TYPES = { honey=true, material=true, item=true, tool=true, time=true }
 
 local function validateStep(step, i)
@@ -280,3 +280,4 @@ return {
     validate = validate,
     selfTest = selfTest,
 }
+

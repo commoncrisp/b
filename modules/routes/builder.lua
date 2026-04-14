@@ -1,7 +1,7 @@
-local Players     = game:GetService("Players")
+﻿local Players     = game:GetService("Players")
 local lp          = Players.LocalPlayer
 local RAW_BASE    = "https://raw.githubusercontent.com/commoncrisp/b/main/"
-local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer" }
+local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hopper" }
 local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
 
 -- Materials (select by amount)
@@ -458,6 +458,15 @@ local function open(onRun)
         currentAction.atlasConfig = v
     end)
 
+    -- sprout_hopper fields
+    local aSH = Instance.new("Frame", actSec)
+    aSH.Size = UDim2.new(1,0,0,34); aSH.BackgroundTransparency = 1; aSH.Visible = false
+    acfFrames["sprout_hopper"] = aSH
+    lbl(aSH, "Atlas config", UDim2.new(0,100,1,0), UDim2.new(0,0,0,0), 11, Color3.fromRGB(150,150,150))
+    local shAtlasDd = makeDropdown(aSH, ATLAS_OPTIONS, UDim2.new(0,260,0,28), UDim2.new(0,104,0,1), function(v)
+        currentAction.atlasConfig = v
+    end)
+
     -- Trigger section
     local trgSec   = section(stepScroll, "Trigger")
     local trgTypeR = row(trgSec)
@@ -552,3 +561,5 @@ local function open(onRun)
 end
 
 return { open = open }
+
+

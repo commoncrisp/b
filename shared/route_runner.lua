@@ -1,4 +1,4 @@
-local HttpService = game:GetService("HttpService")
+﻿local HttpService = game:GetService("HttpService")
 local Players     = game:GetService("Players")
 local lp          = Players.LocalPlayer
 
@@ -168,6 +168,12 @@ local function run(route, dlog, flyTo, detection, overrideStartStep)
                 dlog("[Adjuster] Action stopped")
             end)
         
+        elseif action.type == "sprout_hopper" then
+            if action.atlasConfig then applyAtlasConfig(action.atlasConfig, dlog) end
+            local sh = loadstring(game:HttpGet(RAW_BASE .. "modules/sprout_hopper/init.lua"))()
+            actionThread = task.spawn(function() sh.run(dlog) end)
+            _currentSproutHopper = sh
+
         elseif action.type == "rj_buyer" then
             if action.atlasConfig then
                 applyAtlasConfig(action.atlasConfig, dlog)
@@ -400,3 +406,4 @@ return {
     clearProgress = clearProgress,
     selfTest      = selfTest,
 }
+
