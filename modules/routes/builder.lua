@@ -5,7 +5,7 @@ local ACTION_TYPES  = { "atlas_config", "adjuster_loop", "rj_buyer", "sprout_hop
 local TRIGGER_TYPES = { "honey", "material", "item", "tool", "time" }
 
 -- Materials (select by amount)
-local local
+local MATERIAL_OPTIONS = {
     -- Misc
     "Snowflake", "Ticket", "Gumdrop", "Coconut", "Stinger", "Honeysuckle",
     "Whirligig", "Jelly Beans", "Red Extract", "Blue Extract", "Glitter",
@@ -33,7 +33,7 @@ local local
 }
 
 -- Items (owned or not — masks, guards, belts, boots, gliders, planters)
-local local
+local ITEM_OPTIONS = {
     -- Masks / Hats
     "Helmet", "Propeller Hat", "Beekeeper's Mask", "Honey Mask", "Fire Mask",
     "Bubble Mask", "Gummy Mask", "Demon Mask", "Diamond Mask",
@@ -58,7 +58,7 @@ local local
 }
 
 -- Tools (trigger fires when player has this tool OR better in the tier list)
-local local
+local TOOL_OPTIONS = {
     -- Tools
     "Scooper", "Rake", "Clippers", "Magnet", "Empty", "Super Scooper",
     "Pulsar", "Electro-Magnet", "Scissors", "Honey Dipper", "Bubble Wand",
