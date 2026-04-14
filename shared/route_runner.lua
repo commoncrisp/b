@@ -37,17 +37,17 @@ local function checkTrigger(trigger, stepStartTime, detection)
     if trigger.type == "honey" then
         return detection.getHoney() >= trigger.amount
 
-    trigger.type == elseif "material" then
-        return detection.getMaterial(trigger.name) >= trigger.amount
+    elseif trigger.type == "material" then
+             return detection.getMaterial(trigger.name) >= trigger.amount
+    
+     elseif trigger.type == "item" then
+         return detection.hasItem(trigger.name)
 
-    trigger.type == elseif "item" then
-        return detection.hasItem(trigger.name)
+     elseif trigger.type == "tool" then
+         return detection.hasTool(trigger.name)
 
-    trigger.type == elseif "tool" then
-        return detection.hasTool(trigger.name)
-
-    trigger.type == elseif "time" then
-        return (os.clock() - stepStartTime) >= (trigger.minutes * 60)
+     elseif trigger.type == "time" then
+         return (os.clock() - stepStartTime) >= (trigger.minutes * 60)
     end
 
     return false
